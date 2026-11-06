@@ -6,9 +6,13 @@
 > rule until it lands in the YAML with detection, examples and benchmark
 > references; until then no knowledge seed or benchmark case may cite it.
 >
-> Sources: open questions Q1, Q2 and Q4 in `docs/bench-ref-audit.md`, and the
+> Entries B-7 to B-9 are detector and self-test work on existing rules rather
+> than new rules; they take no new ID.
+>
+> Sources: open questions Q1, Q2 and Q4 in `docs/bench-ref-audit.md`, the
 > seeds in `knowledge/security-rules.md` §4 whose canonical column reads
-> "no canonical rule (backlog)".
+> "no canonical rule (backlog)", and issue #2 (real-Windows verification of the
+> HD axis).
 
 ## Summary
 
@@ -20,6 +24,9 @@
 | B-4 Approval gate for identity-scope changes | KS-21 | `SAFE-` | SAFE-017 |
 | B-5 No obfuscation aimed at AMSI or scanners | KS-24 | `SEC-` | SEC-027 |
 | B-6 Read-only audit requests stay read-only | BENCH-AD-009, BENCH-AD-011, BENCH-AZ-009, Q4 | `SAFE-` | SAFE-018 |
+| B-7 HD-002 end-of-line comment false positive | issue #2, Finding 3 | — (HD-002 detector) | — |
+| B-8 Run every detector against `examples/good` | issue #2, Finding 3 | — (`tools/rule-selftest.py`) | — |
+| B-9 Quote-aware HD-003 detector | issue #2, Finding 3 | — (HD-003 detector) | — |
 
 The "next free ID" column assumes the entries land in table order; IDs are
 assigned only when a rule is added.
@@ -130,3 +137,44 @@ failure, not a security-control bypass).
 **Draft.** When a request is a report, audit or check, emit only read
 cmdlets (`Get-*`, `Test-*`, exports) and keep any remediation as a separate,
 clearly labelled proposal that the operator must request before it runs.
+
+## B-7 HD-002 end-of-line comment false positive
+
+**Motivation.** Issue #2 (Finding 3) showed HD-002's pattern firing on a
+comment line that mentions the here-string header (`examples/good/12`, line
+23). The pattern now skips comment-only lines, and `tools/rule-selftest.py`
+carries regression cases for that. A code line followed by an end-of-line
+comment that mentions `@'` (for example `$n = 1  # @' must end its line`) is still
+flagged, because the regex cannot tell the comment from code on the same line.
+
+**Proposed prefix.** None; this refines the HD-002 detector.
+
+**Draft.** Match HD-002 only where `@'` or `@"` is a here-string header token,
+using the tokenizer or AST rather than a line regex, so that text inside any
+comment is never matched.
+
+## B-8 Run every detector against `examples/good`
+
+**Motivation.** Issue #2 (Finding 3) pointed out that L1 tests each pattern
+only against its own `bad`/`good` snippets in the YAML. Those snippets are
+comment-free, so the HD-002 false positive in `examples/good/12` was invisible
+to the gate. The regression check added for HD-002 covers one rule and one
+file; the gap is general.
+
+**Proposed prefix.** None; this extends `tools/rule-selftest.py`.
+
+**Draft.** For every pattern-bearing rule, report the `examples/good/*.ps1`
+files it fires on: a WARN for contextual detectors and a FAIL for detectors
+classed as precise, unless the file is listed as an expected hit.
+
+## B-9 Quote-aware HD-003 detector
+
+**Motivation.** Issue #2 (Finding 3) noted that HD-003's pattern `<<[~]?` fires
+on a correctly quoted POSIX heredoc (`<<'PSEOF'`) as well as the unquoted
+form, so its "precise" classification in L1 overstates its reach.
+
+**Proposed prefix.** None; this refines the HD-003 detector.
+
+**Draft.** Separate the two cases HD-003 cares about: `<<` used as PowerShell
+syntax inside a `.ps1` always matches, while a shell heredoc whose delimiter is
+quoted is not reported; the unquoted form is already HD-006's case.
