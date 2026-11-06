@@ -28,9 +28,9 @@ machine-wide loosening. After, SAFE-009 forbids every Bypass/Unrestricted
 form, and the only policy change it allows is Process-scope RemoteSigned
 under a recorded exception. Any benchmark scoring, routing label or example
 that relied on the old reading of SAFE-009 has to be re-checked against the
-new one. On `main` only BENCH-AZ-002 references SAFE-009, and
-`fix/bench-rule-refs` already replaces that reference, so no benchmark case
-depends on the old wording.
+new one. No benchmark case references SAFE-009 on `main` @ `c3da46c` (the
+only former reference, BENCH-AZ-002, was replaced in the benchmark reference
+audit), so no case depends on the old wording.
 
 SEC-010's `good` example signs and runs the script; SAFE-009's exception path
 (`Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned`) is not a
@@ -51,16 +51,21 @@ starts.
 so the secret stays inside a credential object and never reaches argv. No
 rule semantics change.
 
-## 3. Not changed, flagged for review
+## 3. Good examples
 
-| Location | Observation |
-|---|---|
-| `examples/good/01-download-execute-cradle.ps1` | Runs the verified installer with `powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer`, which SEC-010 lists as `bad`. |
-| `examples/good/08-scheduled-task-register.ps1` | Registers the task action as `-NoProfile -ExecutionPolicy Bypass -File`. |
+`examples/good/01-download-execute-cradle.ps1` and
+`examples/good/08-scheduled-task-register.ps1` ran their payloads with
+`-ExecutionPolicy Bypass`, the pattern SEC-010 lists as `bad`. Both now follow
+the new SAFE-009:
 
-Both are "good" examples, so they teach the pattern SEC-010 now forbids
-without exception. Fixing them changes example code that the L3 parse and
-PSScriptAnalyzer gates cover, which is outside this draft.
+| Example | Before | After |
+|---|---|---|
+| 01 download-execute-cradle | `& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer` after the SHA256 check | `Get-AuthenticodeSignature` on the downloaded installer, throw unless `Status` is `Valid`, then `& powershell.exe -NoProfile -File $installer` under the existing policy. |
+| 08 scheduled-task-register | Task action `-NoProfile -ExecutionPolicy Bypass -File` | `Get-AuthenticodeSignature` on the action script before registering, throw unless `Valid`; task action `-NoProfile -File`. |
+
+Both stay Windows PowerShell 5.1 compatible and pass the L3 parse and
+PSScriptAnalyzer gates. The matching `bad` examples and `examples/EXAMPLES.md`
+do not mention execution policy, so they are unchanged.
 
 ## 4. Routing labels (`rules_blob`)
 

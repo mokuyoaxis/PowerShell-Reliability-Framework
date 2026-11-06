@@ -15,6 +15,13 @@ if (-not (Test-Path -LiteralPath $ScriptPath -PathType Leaf)) {
     throw "Action script not found: $ScriptPath"
 }
 
+# SEC-010: the task runs under the existing execution policy, never
+# -ExecutionPolicy Bypass, so the payload must be validly signed.
+$signature = Get-AuthenticodeSignature -FilePath $ScriptPath
+if ($signature.Status -ne 'Valid') {
+    throw "Action script signature is not valid: $($signature.Status)"
+}
+
 # IDEM-009: overwrite-AWARENESS. Inspect any existing registration first;
 # never silently clobber a task someone else may depend on.
 $existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
@@ -30,7 +37,7 @@ if ($existing) {
 
 if ($PSCmdlet.ShouldProcess($TaskName, "Register daily 02:30 task -> $ScriptPath")) {
     $action   = New-ScheduledTaskAction -Execute 'powershell.exe' `
-        -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$ScriptPath`""
+        -Argument "-NoProfile -File `"$ScriptPath`""
     $trigger  = New-ScheduledTaskTrigger -Daily -At '02:30'
     $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable `
         -ExecutionTimeLimit (New-TimeSpan -Hours 2)
