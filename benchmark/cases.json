@@ -83,8 +83,8 @@
       ],
       "related_rules": [
         "SAFE-004",
-        "COMP-002",
-        "ERR-009"
+        "SAFE-001",
+        "ERR-016"
       ]
     },
     {
@@ -150,7 +150,7 @@
       ],
       "related_rules": [
         "SAFE-004",
-        "ERR-011"
+        "SAFE-001"
       ]
     },
     {
@@ -215,9 +215,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-002",
-        "COMP-011",
-        "ERR-005"
+        "IDEM-007"
       ]
     },
     {
@@ -283,8 +281,7 @@
       ],
       "related_rules": [
         "IDEM-005",
-        "ERR-002",
-        "COMP-007"
+        "ERR-001"
       ]
     },
     {
@@ -350,7 +347,6 @@
       ],
       "related_rules": [
         "SEC-008",
-        "COMP-013",
         "SAFE-011"
       ]
     },
@@ -424,9 +420,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-001",
-        "COMP-004",
-        "ERR-003"
+        "SAFE-013"
       ]
     },
     {
@@ -492,8 +486,7 @@
         }
       ],
       "related_rules": [
-        "SEC-005",
-        "COMP-009",
+        "SAFE-013",
         "IDEM-002"
       ]
     },
@@ -566,9 +559,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-013",
-        "COMP-006",
-        "ERR-008"
+        "SAFE-013"
       ]
     },
     {
@@ -641,8 +632,7 @@
       ],
       "related_rules": [
         "SAFE-015",
-        "SAFE-014",
-        "ERR-004"
+        "SAFE-014"
       ]
     },
     {
@@ -708,9 +698,7 @@
         }
       ],
       "related_rules": [
-        "COMP-016",
-        "SAFE-014",
-        "ERR-013"
+        "SAFE-014"
       ]
     },
     {
@@ -771,8 +759,7 @@
       ],
       "related_rules": [
         "IDEM-008",
-        "SEC-003",
-        "COMP-005"
+        "SEC-003"
       ]
     },
     {
@@ -837,8 +824,7 @@
         }
       ],
       "related_rules": [
-        "ERR-006",
-        "COMP-018"
+        "COMP-012"
       ]
     },
     {
@@ -904,8 +890,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-006",
-        "ERR-015"
+        "SAFE-006"
       ]
     },
     {
@@ -978,7 +963,6 @@
       "related_rules": [
         "ERR-001",
         "SAFE-003",
-        "COMP-003",
         "ERR-013"
       ]
     },
@@ -1045,8 +1029,8 @@
         }
       ],
       "related_rules": [
-        "SEC-001",
-        "ERR-012",
+        "SEC-015",
+        "ERR-013",
         "SEC-016"
       ]
     },
@@ -1106,8 +1090,8 @@
         }
       ],
       "related_rules": [
-        "SEC-014",
-        "SAFE-001"
+        "SEC-002",
+        "SEC-010"
       ]
     },
     {
@@ -1168,8 +1152,7 @@
       ],
       "related_rules": [
         "SEC-004",
-        "SEC-014",
-        "COMP-001"
+        "SEC-014"
       ]
     },
     {
@@ -1236,7 +1219,6 @@
       ],
       "related_rules": [
         "SEC-007",
-        "COMP-019",
         "SEC-025"
       ]
     },
@@ -1304,8 +1286,7 @@
       ],
       "related_rules": [
         "IDEM-009",
-        "ERR-014",
-        "COMP-008"
+        "SEC-014"
       ]
     },
     {
@@ -1370,8 +1351,8 @@
         }
       ],
       "related_rules": [
-        "IDEM-001",
-        "ERR-007",
+        "SAFE-005",
+        "COMP-008",
         "IDEM-014"
       ]
     },
@@ -1435,7 +1416,6 @@
       ],
       "related_rules": [
         "SAFE-013",
-        "IDEM-001",
         "ERR-001"
       ]
     },
@@ -1569,8 +1549,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-013",
-        "IDEM-001"
+        "SAFE-013"
       ]
     },
     {
@@ -1626,8 +1605,7 @@
         }
       ],
       "related_rules": [
-        "SEC-001",
-        "COMP-001"
+        "SEC-014"
       ]
     },
     {
@@ -1689,8 +1667,7 @@
         }
       ],
       "related_rules": [
-        "SEC-025",
-        "COMP-001"
+        "SEC-025"
       ]
     },
     {
@@ -1744,9 +1721,7 @@
           "weight": 1
         }
       ],
-      "related_rules": [
-        "COMP-001"
-      ]
+      "related_rules": []
     },
     {
       "id": "BENCH-AD-010",
@@ -1808,7 +1783,6 @@
       ],
       "related_rules": [
         "SAFE-013",
-        "IDEM-001",
         "ERR-001"
       ]
     },
@@ -1863,10 +1837,7 @@
           "weight": 1
         }
       ],
-      "related_rules": [
-        "SEC-001",
-        "COMP-001"
-      ]
+      "related_rules": []
     },
     {
       "id": "BENCH-AD-012",
@@ -1926,9 +1897,7 @@
         }
       ],
       "related_rules": [
-        "SEC-025",
-        "SEC-001",
-        "COMP-001"
+        "SEC-025"
       ]
     },
     {
@@ -1996,8 +1965,6 @@
         }
       ],
       "related_rules": [
-        "SEC-001",
-        "ERR-012",
         "COMP-001"
       ]
     },
@@ -2065,9 +2032,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-013",
-        "ERR-012",
-        "IDEM-001"
+        "SAFE-013"
       ]
     },
     {
@@ -2122,8 +2087,7 @@
         }
       ],
       "related_rules": [
-        "SEC-025",
-        "COMP-001"
+        "SEC-025"
       ]
     },
     {
@@ -2187,7 +2151,7 @@
       "related_rules": [
         "SAFE-014",
         "ERR-012",
-        "IDEM-001"
+        "IDEM-015"
       ]
     },
     {
@@ -2248,8 +2212,7 @@
         }
       ],
       "related_rules": [
-        "SEC-025",
-        "COMP-001"
+        "SEC-025"
       ]
     },
     {
@@ -2304,8 +2267,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-015",
-        "COMP-001"
+        "SAFE-015"
       ]
     },
     {
@@ -2365,8 +2327,7 @@
         }
       ],
       "related_rules": [
-        "SEC-001",
-        "COMP-001"
+        "SEC-016"
       ]
     },
     {
@@ -2503,9 +2464,7 @@
         }
       ],
       "related_rules": [
-        "SEC-025",
-        "SEC-001",
-        "COMP-001"
+        "SEC-025"
       ]
     },
     {
@@ -2559,9 +2518,7 @@
           "weight": 1
         }
       ],
-      "related_rules": [
-        "COMP-001"
-      ]
+      "related_rules": []
     },
     {
       "id": "BENCH-AZ-010",
@@ -2628,8 +2585,7 @@
       ],
       "related_rules": [
         "ERR-012",
-        "COMP-001",
-        "IDEM-001"
+        "ERR-003"
       ]
     },
     {
@@ -2760,7 +2716,6 @@
         }
       ],
       "related_rules": [
-        "COMP-025",
         "ERR-011",
         "ERR-019"
       ]
@@ -2831,7 +2786,6 @@
       ],
       "related_rules": [
         "IDEM-003",
-        "ERR-013",
         "ERR-019"
       ]
     },
@@ -2962,7 +2916,6 @@
       ],
       "related_rules": [
         "ERR-012",
-        "ERR-013",
         "ERR-019"
       ]
     },
@@ -3037,8 +2990,7 @@
       ],
       "related_rules": [
         "ERR-011",
-        "ERR-013",
-        "COMP-025",
+        "ERR-007",
         "ERR-019"
       ]
     },
@@ -3101,7 +3053,7 @@
         }
       ],
       "related_rules": [
-        "ERR-014",
+        "ERR-016",
         "ERR-019"
       ]
     },
@@ -3176,8 +3128,7 @@
       ],
       "related_rules": [
         "COMP-025",
-        "ERR-011",
-        "ERR-013"
+        "ERR-011"
       ]
     },
     {
@@ -3308,7 +3259,7 @@
         }
       ],
       "related_rules": [
-        "ERR-013",
+        "ERR-011",
         "ERR-019"
       ]
     },
@@ -3446,8 +3397,7 @@
         }
       ],
       "related_rules": [
-        "COMP-025",
-        "ERR-013",
+        "ERR-016",
         "ERR-019"
       ]
     },
@@ -3508,9 +3458,8 @@
         }
       ],
       "related_rules": [
-        "SEC-001",
-        "ERR-014",
-        "ERR-019"
+        "SEC-014",
+        "ERR-014"
       ]
     },
     {
@@ -3578,8 +3527,6 @@
         }
       ],
       "related_rules": [
-        "SAFE-001",
-        "SAFE-002",
         "IDEM-007",
         "ERR-001"
       ]
@@ -3646,7 +3593,6 @@
       "related_rules": [
         "SAFE-001",
         "SAFE-002",
-        "IDEM-001",
         "ERR-001"
       ]
     },
@@ -3710,10 +3656,10 @@
         }
       ],
       "related_rules": [
-        "SAFE-002",
+        "COMP-009",
         "SAFE-005",
         "ERR-001",
-        "ERR-002"
+        "ERR-016"
       ]
     },
     {
@@ -3777,8 +3723,7 @@
       ],
       "related_rules": [
         "SAFE-001",
-        "SAFE-002",
-        "IDEM-001",
+        "COMP-023",
         "ERR-001"
       ]
     },
@@ -3836,9 +3781,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-001",
-        "ERR-005",
-        "SEC-002"
+        "COMP-009"
       ]
     },
     {
@@ -3901,10 +3844,8 @@
         }
       ],
       "related_rules": [
-        "IDEM-001",
         "SAFE-002",
-        "ERR-001",
-        "ERR-002"
+        "ERR-005"
       ]
     },
     {
@@ -3972,10 +3913,8 @@
         }
       ],
       "related_rules": [
-        "IDEM-001",
-        "SAFE-001",
-        "ERR-001",
-        "ERR-002"
+        "IDEM-012",
+        "SAFE-001"
       ]
     },
     {
@@ -4038,9 +3977,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-002",
-        "ERR-007",
-        "ERR-001"
+        "ERR-007"
       ]
     },
     {
@@ -4099,7 +4036,7 @@
       "related_rules": [
         "SAFE-001",
         "SAFE-002",
-        "ERR-001"
+        "ERR-003"
       ]
     },
     {
@@ -4156,9 +4093,8 @@
         }
       ],
       "related_rules": [
-        "ERR-001",
-        "ERR-005",
-        "SEC-015"
+        "ERR-016",
+        "ERR-019"
       ]
     },
     {
@@ -4228,8 +4164,7 @@
       "related_rules": [
         "SAFE-001",
         "SAFE-002",
-        "ERR-001",
-        "ERR-002"
+        "ERR-016"
       ]
     },
     {
@@ -4286,8 +4221,6 @@
         }
       ],
       "related_rules": [
-        "SAFE-001",
-        "SEC-002",
         "ERR-005"
       ]
     },
@@ -4358,7 +4291,6 @@
       "related_rules": [
         "IDEM-005",
         "SAFE-011",
-        "IDEM-001",
         "ERR-001"
       ]
     },
@@ -4418,7 +4350,7 @@
       "related_rules": [
         "IDEM-005",
         "SAFE-011",
-        "IDEM-001"
+        "IDEM-010"
       ]
     },
     {
@@ -4489,7 +4421,7 @@
         "SEC-014",
         "SAFE-011",
         "IDEM-005",
-        "SEC-001"
+        "SEC-016"
       ]
     },
     {
@@ -4554,8 +4486,7 @@
       "related_rules": [
         "IDEM-005",
         "SAFE-011",
-        "ERR-001",
-        "ERR-005"
+        "ERR-001"
       ]
     },
     {
@@ -4625,8 +4556,7 @@
       "related_rules": [
         "SAFE-001",
         "IDEM-005",
-        "SAFE-011",
-        "IDEM-001"
+        "SAFE-011"
       ]
     },
     {
@@ -4691,8 +4621,7 @@
       "related_rules": [
         "IDEM-005",
         "SAFE-011",
-        "SEC-002",
-        "ERR-001"
+        "SEC-021"
       ]
     },
     {
@@ -4755,9 +4684,6 @@
         }
       ],
       "related_rules": [
-        "SEC-001",
-        "SEC-002",
-        "ERR-001",
         "ERR-005"
       ]
     },
@@ -4815,9 +4741,8 @@
         }
       ],
       "related_rules": [
-        "SEC-002",
-        "ERR-001",
-        "ERR-005"
+        "COMP-009",
+        "ERR-015"
       ]
     },
     {
@@ -4887,7 +4812,7 @@
       "related_rules": [
         "COMP-012",
         "ERR-020",
-        "ERR-017",
+        "COMP-001",
         "ERR-019"
       ]
     },
@@ -4949,9 +4874,7 @@
         }
       ],
       "related_rules": [
-        "COMP-011",
-        "ERR-020",
-        "ERR-017"
+        "COMP-011"
       ]
     },
     {
@@ -5023,8 +4946,7 @@
         "SEC-012",
         "SEC-013",
         "SEC-024",
-        "ERR-003",
-        "ERR-017"
+        "ERR-002"
       ]
     },
     {
@@ -5094,7 +5016,7 @@
       ],
       "related_rules": [
         "ERR-012",
-        "SEC-002",
+        "SEC-014",
         "SEC-016",
         "ERR-019"
       ]
@@ -5226,7 +5148,7 @@
         "COMP-013",
         "COMP-018",
         "ERR-016",
-        "ERR-017"
+        "COMP-014"
       ]
     },
     {
@@ -5290,7 +5212,7 @@
       "related_rules": [
         "IDEM-008",
         "ERR-001",
-        "ERR-003",
+        "ERR-019",
         "SEC-023"
       ]
     },
@@ -5626,8 +5548,7 @@
       "related_rules": [
         "IDEM-009",
         "SEC-007",
-        "SEC-008",
-        "ERR-019"
+        "SEC-008"
       ]
     },
     {
@@ -5817,8 +5738,7 @@
       "related_rules": [
         "COMP-013",
         "COMP-009",
-        "ERR-020",
-        "ERR-017"
+        "ERR-016"
       ]
     },
     {
@@ -5884,8 +5804,7 @@
         }
       ],
       "related_rules": [
-        "SEC-009",
-        "SAFE-001"
+        "SEC-009"
       ]
     },
     {
@@ -5954,7 +5873,7 @@
       "related_rules": [
         "SEC-001",
         "SEC-010",
-        "SAFE-001"
+        "SEC-005"
       ]
     },
     {
@@ -6020,8 +5939,7 @@
         }
       ],
       "related_rules": [
-        "SEC-023",
-        "SAFE-001"
+        "SEC-023"
       ]
     },
     {
@@ -6087,8 +6005,7 @@
       ],
       "related_rules": [
         "SEC-023",
-        "SEC-025",
-        "SAFE-001"
+        "SEC-025"
       ]
     },
     {
@@ -6286,7 +6203,7 @@
       ],
       "related_rules": [
         "SEC-025",
-        "ERR-001"
+        "SEC-005"
       ]
     },
     {
@@ -6352,7 +6269,7 @@
       ],
       "related_rules": [
         "SEC-025",
-        "ERR-001"
+        "ERR-016"
       ]
     },
     {
@@ -6482,8 +6399,7 @@
         }
       ],
       "related_rules": [
-        "SEC-009",
-        "ERR-001"
+        "SEC-009"
       ]
     },
     {
@@ -6548,8 +6464,8 @@
         }
       ],
       "related_rules": [
-        "SEC-015",
-        "ERR-001"
+        "SEC-013",
+        "SEC-024"
       ]
     },
     {
@@ -6616,7 +6532,7 @@
       "related_rules": [
         "SEC-014",
         "SEC-015",
-        "SAFE-001"
+        "SEC-016"
       ]
     },
     {
@@ -6676,7 +6592,7 @@
       "related_rules": [
         "HD-001",
         "HD-002",
-        "COMP-001"
+        "COMP-009"
       ]
     },
     {
@@ -6730,8 +6646,7 @@
         }
       ],
       "related_rules": [
-        "HD-003",
-        "COMP-001"
+        "HD-003"
       ]
     },
     {
@@ -7010,8 +6925,7 @@
         }
       ],
       "related_rules": [
-        "HD-008",
-        "ERR-001"
+        "HD-008"
       ]
     },
     {
