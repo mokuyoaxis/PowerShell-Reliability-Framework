@@ -6,7 +6,9 @@
 
 Generated PowerShell is a security artifact whether or not its author intended it to be. These
 rules define the posture agents MUST apply when emitting PowerShell in enterprise contexts.
-Rule seeds are indexed in the final table (`SEC-001` … `SEC-025`). Companion rule series are
+Rule seeds are indexed in the final table (`KS-01` … `KS-25`). Seed numbers are local to this
+document and are not rule IDs; each seed names the canonical rule(s) in
+`rules/reliability-rules.yaml` that implement it. Companion rule series are
 referenced throughout: `ERR-` (error architecture), `SAFE-` (safe execution), `IDEM-`
 (idempotency), and `COMP-` (Windows PowerShell 5.1 / PowerShell 7.x compatibility).
 
@@ -31,7 +33,7 @@ PowerShell through two instruments, and generated code must treat both as first-
   7.x submit script content to the registered antivirus provider at execution time. Content
   engineered to evade scanning — chunked concatenation, runtime decoding, character-map tricks
   — is itself among the highest-fidelity detection signals available to defenders. Generated
-  code must never attempt to defeat, probe, or reason around AMSI (SEC-024).
+  code must never attempt to defeat, probe, or reason around AMSI (KS-24).
 - **Script Block Logging.** PowerShell records decompiled script blocks at execution time
   (event ID 4104, `Microsoft-Windows-PowerShell/Operational`), including code that was
   assembled dynamically at runtime. Hiding logic inside `Invoke-Expression` therefore fails
@@ -50,7 +52,7 @@ Finally, generated code is an **audit liability**. When incident responders pull
 4104 events and find thousands of machine-authored one-off scripts with no ticket, no owner,
 and no signature, every legitimate operation becomes expensive to defend after the fact.
 Auditability — attribution, approval trail, reviewable source — is therefore a generation-time
-requirement, not an operations afterthought (SEC-021, SEC-022).
+requirement, not an operations afterthought (KS-21, KS-22).
 
 ---
 
@@ -58,24 +60,24 @@ requirement, not an operations afterthought (SEC-021, SEC-022).
 
 Each row names a primitive that appears constantly in AI-generated PowerShell, the typical way
 a model reaches for it, and the defensive replacement the agent must emit instead. Denying the
-primitive alone is insufficient — the replacement is the rule (SEC-001 through SEC-018).
+primitive alone is insufficient — the replacement is the rule (KS-01 through KS-18).
 
 | Primitive | Typical AI-generated usage | Defensive replacement |
 |---|---|---|
-| `Invoke-Expression` / `iex` alias | Building commands from interpolated strings; config-driven dispatch; "flexible" wrappers around user input | Pre-parsed constructs only: explicit calls, `switch` maps, hashtable dispatch to known functions; validate external values against an allow-list before use (SEC-001) |
+| `Invoke-Expression` / `iex` alias | Building commands from interpolated strings; config-driven dispatch; "flexible" wrappers around user input | Pre-parsed constructs only: explicit calls, `switch` maps, hashtable dispatch to known functions; validate external values against an allow-list before use (KS-01) |
 | `& $commandString`, `. $scriptText` | Same intent in operator form, common when the model wants "late binding" | Bind early: resolve the exact cmdlet or function name at authoring time; pass data as parameters, never as code |
-| `[scriptblock]::Create($code)` | Synthesizing logic at runtime from templates or API responses | Ship the scriptblock as literal source in the file; if variability is needed, parameterize data, not code (SEC-001) |
-| Download cradles: `(iwr $u).Content \| iex`, `(New-Object Net.WebClient).DownloadString($u)` piped into execution, `curl.exe -o $env:TEMP\t.ps1; t.ps1` | One-line tool installation; bootstrapping helpers from gists or internal shares | Download to a managed path, verify a pinned SHA-256 hash or Authenticode signature, then invoke a documented entry point; prefer native package management (`winget`, MSI) (SEC-002, SEC-003) |
-| `-EncodedCommand`; base64-decode-execute | "Avoiding quoting problems"; concealing long bootstrap commands | Encode *data*, never *code*: pass arguments via files or arrays; if bootstrap logic is genuinely complex, ship a signed script (SEC-004) |
-| `mshta`, `rundll32`, `regsvr32` with foreign arguments | Launching HTA payloads, calling exotic DLL exports, registering proxies | Use supported front-door tooling; these binaries are acceptable only invoking first-party, signed, documented payloads — never fetched or temp-path content (SEC-005) |
-| Persistence creation: `Register-ScheduledTask` pointing at foreign binaries; `Set-ItemProperty HKCU:\…\Run` writes | "Keep my agent alive"; self-healing loops | Persist only version-controlled, signed scripts under managed paths with a named owning team, and treat each registration as an approved change (SEC-006) |
-| `Set-MpPreference` / `Add-MpPreference -Exclusion*` tampering | Making an antivirus false positive "go away" mid-deployment | Forbidden in generated automation; route through the security exception process. Exclusion writes are treated as adversary-in-use behavior (SEC-007) |
-| `Set-ExecutionPolicy Bypass` / `Unrestricted` as workaround | Fixing "this script won't run" on a target host | Preserve GPO-held policy: Authenticode-sign the script, deploy to a trusted path under RemoteSigned, or use an approved context — never widen machine-scope policy (SEC-008) |
-| Plaintext credentials: `-Password (ConvertTo-SecureString 'P@ss' -AsPlainText -Force)`; passwords on command lines | Quick service-account auth; "test first, secure later" (never revisited) | Retrieve credentials from SecretManagement-backed vaults (SEC-009); confine plaintext conversion to fixtures with synthetic values (SEC-010); keep secrets off command lines, which leak via process enumeration (SEC-011) |
-| Private-key export: `Export-PfxCertificate` of exportable keys to flat files | Certificate migration and backup scripts | Keys stay non-exportable by default; export requires key-custodian approval, AES-256 PFX encryption, and out-of-band passphrase handoff (SEC-012) |
-| TLS downgrade: `[Net.ServicePointManager]::SecurityProtocol = 'Tls'` and enum hacks forcing legacy protocols | Rescuing calls against legacy internal endpoints | Raise, never lower: the single sanctioned 5.1-era line enables `Tls12` alongside existing defaults; 7.x needs no hack; legacy servers get fixed server-side (SEC-013, COMP-) |
-| Validation suppression: `ServerCertificateValidationCallback = { $true }`; reflexive `-SkipCertificateCheck` | Making self-signed dev endpoints work | Repair trust instead: import the issuing root CA, fix SAN/name mismatches. Any `-SkipCertificateCheck` needs inline justification and is barred from production paths (SEC-014, SEC-015) |
-| Hidden-window `Start-Process` of downloaded binaries | Launching installers or fetched tools quietly | Observable execution by default: installation flows through the software-deployment system or a verified package; hidden launches of foreign binaries require written justification (SEC-017, SEC-018) |
+| `[scriptblock]::Create($code)` | Synthesizing logic at runtime from templates or API responses | Ship the scriptblock as literal source in the file; if variability is needed, parameterize data, not code (KS-01) |
+| Download cradles: `(iwr $u).Content \| iex`, `(New-Object Net.WebClient).DownloadString($u)` piped into execution, `curl.exe -o $env:TEMP\t.ps1; t.ps1` | One-line tool installation; bootstrapping helpers from gists or internal shares | Download to a managed path, verify a pinned SHA-256 hash or Authenticode signature, then invoke a documented entry point; prefer native package management (`winget`, MSI) (KS-02, KS-03) |
+| `-EncodedCommand`; base64-decode-execute | "Avoiding quoting problems"; concealing long bootstrap commands | Encode *data*, never *code*: pass arguments via files or arrays; if bootstrap logic is genuinely complex, ship a signed script (KS-04) |
+| `mshta`, `rundll32`, `regsvr32` with foreign arguments | Launching HTA payloads, calling exotic DLL exports, registering proxies | Use supported front-door tooling; these binaries are acceptable only invoking first-party, signed, documented payloads — never fetched or temp-path content (KS-05) |
+| Persistence creation: `Register-ScheduledTask` pointing at foreign binaries; `Set-ItemProperty HKCU:\…\Run` writes | "Keep my agent alive"; self-healing loops | Persist only version-controlled, signed scripts under managed paths with a named owning team, and treat each registration as an approved change (KS-06) |
+| `Set-MpPreference` / `Add-MpPreference -Exclusion*` tampering | Making an antivirus false positive "go away" mid-deployment | Forbidden in generated automation; route through the security exception process. Exclusion writes are treated as adversary-in-use behavior (KS-07) |
+| `Set-ExecutionPolicy Bypass` / `Unrestricted` as workaround | Fixing "this script won't run" on a target host | Preserve GPO-held policy: Authenticode-sign the script, deploy to a trusted path under RemoteSigned, or use an approved context — never widen machine-scope policy (KS-08) |
+| Plaintext credentials: `-Password (ConvertTo-SecureString 'P@ss' -AsPlainText -Force)`; passwords on command lines | Quick service-account auth; "test first, secure later" (never revisited) | Retrieve credentials from SecretManagement-backed vaults (KS-09); confine plaintext conversion to fixtures with synthetic values (KS-10); keep secrets off command lines, which leak via process enumeration (KS-11) |
+| Private-key export: `Export-PfxCertificate` of exportable keys to flat files | Certificate migration and backup scripts | Keys stay non-exportable by default; export requires key-custodian approval, AES-256 PFX encryption, and out-of-band passphrase handoff (KS-12) |
+| TLS downgrade: `[Net.ServicePointManager]::SecurityProtocol = 'Tls'` and enum hacks forcing legacy protocols | Rescuing calls against legacy internal endpoints | Raise, never lower: the single sanctioned 5.1-era line enables `Tls12` alongside existing defaults; 7.x needs no hack; legacy servers get fixed server-side (KS-13) |
+| Validation suppression: `ServerCertificateValidationCallback = { $true }`; reflexive `-SkipCertificateCheck` | Making self-signed dev endpoints work | Repair trust instead: import the issuing root CA, fix SAN/name mismatches. Any `-SkipCertificateCheck` needs inline justification and is barred from production paths (KS-14, KS-15) |
+| Hidden-window `Start-Process` of downloaded binaries | Launching installers or fetched tools quietly | Observable execution by default: installation flows through the software-deployment system or a verified package; hidden launches of foreign binaries require written justification (KS-17, KS-18) |
 
 ---
 
@@ -100,7 +102,7 @@ accounts. Design consequences:
 - Emit no `Add-Type`, arbitrary static .NET, or COM instantiation by default; guard richer
   paths behind explicit capability checks and state the assumption in the script header.
 - Never probe or attempt to escape language mode; `$ExecutionContext.SessionState.LanguageMode`
-  is diagnostic context for humans, not something a script should branch around (SEC-019).
+  is diagnostic context for humans, not something a script should branch around (KS-19).
 - Prefer cmdlet verbs JEA authors typically expose: `Get-*` discovery, `Set-*` with validated
   parameters, and `Invoke-Command` against registered session configurations.
 
@@ -110,7 +112,7 @@ Enterprises increasingly enforce application control so that only signed or path
 script content runs. Generated deliverables must therefore arrive as signable artifacts with
 stable paths, not as heredocs pasted into consoles. Never emit code that relocates scripts to
 "allowed" paths to dodge rules, abuses alternate data streams, or uses trusted processes as
-proxies: that is evasion behavior (SEC-020), and it breaks under enforcement anyway.
+proxies: that is evasion behavior (KS-20), and it breaks under enforcement anyway.
 
 ### 3.4 Secret hygiene
 
@@ -118,7 +120,7 @@ Secrets enter scripts only through SecretManagement vault providers — SecretSt
 Entra / Key Vault-backed extensions for shared estates:
 
 ```powershell
-# The only sanctioned credential flow (SEC-009)
+# The only sanctioned credential flow (KS-09)
 Import-Module Microsoft.PowerShell.SecretManagement
 $cred = Get-Secret -Name 'Contoso/SqlAgent'      # stored as PSCredential
 Invoke-SqlMaintenance -Credential $cred
@@ -127,24 +129,24 @@ Invoke-SqlMaintenance -Credential $cred
 Corollaries: never echo secrets, including "temporarily for debugging"; scrub transcripts,
 because `Start-Transcript` records whatever reached the host, so a secret printed once is
 retained in plaintext; redact before writing errors, since ErrorRecords propagate into logs;
-treat any secret observed by a log or terminal as burned and rotate it (SEC-011).
+treat any secret observed by a log or terminal as burned and rotate it (KS-11).
 
 ### 3.5 Egress pinning and the TLS floor
 
 Outbound destinations are pinned: URLs come from configuration constants or approved parameter
 sets, never from untrusted input, and the endpoint list is documented beside the script
-(SEC-016). The protocol floor is TLS 1.2+ everywhere. The one sanctioned compatibility line —
+(KS-16). The protocol floor is TLS 1.2+ everywhere. The one sanctioned compatibility line —
 needed only for Windows PowerShell 5.1 on older stacks — *raises* the floor:
 
 ```powershell
-# PS 5.1 only; PS 7.x negotiates modern TLS by default (COMP-)
+# PS 5.1 only; PS 7.x negotiates modern TLS by default
 [Net.ServicePointManager]::SecurityProtocol =
     [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 ```
 
-Any line that narrows protocol selection below the platform default is denied (SEC-013), and
+Any line that narrows protocol selection below the platform default is denied (KS-13), and
 any callback or switch that skips certificate validation is denied outside a reviewed
-exception (SEC-014, SEC-015).
+exception (KS-14, KS-15).
 
 ### 3.6 Audit trail expectations
 
@@ -152,52 +154,52 @@ Assume production code will be interrogated later: transcripts may be running, s
 logging will capture every block, and reviewers will ask who ran this and why. Therefore: no
 `Clear-Host` in automation, no log deletion, no silencing errors into `$null`, structured
 progress messages instead of cryptic one-liners (the `ERR-` series), and an Authenticode
-signature applied before distribution — signing is a release step, not an option (SEC-022,
-SEC-023).
+signature applied before distribution — signing is a release step, not an option (KS-22,
+KS-23).
 
 ### 3.7 Human-approval gates for identity and tenant-scale operations
 
 Operations touching identity or estate-wide scope — creating or disabling accounts, group
 membership at scale, conditional-access or mailbox policy, DNS/DHCP changes, CA issuance, and
 persistence registration — must be emitted with an approval placeholder: ticket ID, approver,
-scope, and rollback note filled in before the step may run (SEC-021). An agent that cannot
+scope, and rollback note filled in before the step may run (KS-21). An agent that cannot
 attribute a change to an approving human does not produce runnable code for it; it produces a
 change-plan document instead.
 
 ---
 
-## 4. Rule seeds — SEC-001 … SEC-025
+## 4. Rule seeds — KS-01 … KS-25
 
 Posture in one line: **deny dynamic execution, deny cradles, gate identity ops, demand
 verification and auditability.**
 
-| Rule | Seed |
-|---|---|
-| SEC-001 | Deny runtime synthesis/execution of code strings: `Invoke-Expression`, `iex`, `& $str`, `. $str`, `[scriptblock]::Create` on non-literal input |
-| SEC-002 | Deny fetch-and-execute chains (download piped or redirected straight into execution) in any spelling |
-| SEC-003 | Downloads land on managed paths and verify a pinned SHA-256 hash or Authenticode signature before any use |
-| SEC-004 | Deny `-EncodedCommand` and base64/hex decode-execute of code; transport encoding wraps data only |
-| SEC-005 | Deny LOLBin invocation (`mshta`, `rundll32`, `regsvr32`, `installutil`) with foreign scripts, paths, or DLLs |
-| SEC-006 | Persistence objects (tasks, Run keys, services, WMI subscriptions) must target signed, owned, version-controlled payloads and require change approval |
-| SEC-007 | Deny Defender/antivirus setting changes (including exclusions) outside an approved security exception record |
-| SEC-008 | Deny widening `Set-ExecutionPolicy` (Bypass/Unrestricted at machine or user scope); fix signing and deployment instead |
-| SEC-009 | Credentials originate from SecretManagement-backed vaults; hard-coded or file-borne secrets are denied |
-| SEC-010 | `ConvertTo-SecureString -AsPlainText -Force` permitted only in fixtures with obviously synthetic values, never production paths |
-| SEC-011 | Secrets never reach command lines, host output, transcripts, or ErrorRecords; observed secrets are rotated |
-| SEC-012 | Private-key export is non-default: requires custodian approval, AES-256 PFX, out-of-band passphrase delivery |
-| SEC-013 | Enforce a TLS 1.2+ floor; downgrading protocol selection below platform defaults is denied |
-| SEC-014 | Certificate trust failures are repaired (root CA import, SAN/name fixes), never suppressed |
-| SEC-015 | `-SkipCertificateCheck` or validation-returning-`$true` callbacks require inline reviewed justification and are barred from production paths |
-| SEC-016 | Pin egress: endpoints come from documented allow-lists; URLs derived from untrusted input are denied |
-| SEC-017 | Deny executing freshly downloaded binaries directly; installation flows through verified packages or documented installers |
-| SEC-018 | Stealth UI flags (hidden windows, suppressed consoles) on foreign binaries require written justification; default is observable execution |
-| SEC-019 | Default emission must function under Constrained Language Mode; FullLanguage assumptions are stated and checked |
-| SEC-020 | Coexist with AppLocker/WDAC: no path games, stream tricks, or trusted-proxy abuse; distribute signed artifacts |
-| SEC-021 | Identity/domain/tenant-scope mutations require recorded human approval (ticket, approver, scope, rollback) before execution |
-| SEC-022 | Production runs leave an audit trail: no console clearing, no log deletion, attribution preserved in logs and output |
-| SEC-023 | Deny disabling or tampering with telemetry (ETW, transcription, script-block logging, EDR agents) for convenience |
-| SEC-024 | Deny obfuscation aimed at scanners or AMSI (concat-chunking, encoding layers, charmaps); code must read plainly in 4104 events |
-| SEC-025 | Destructive/bulk operations verify preconditions (existence, scope match, backup taken) and honor `-WhatIf`; unverifiable bulk actions block pending dry-run evidence |
+| Seed | Rule seed | Canonical rules |
+|---|---|---|
+| KS-01 | Deny runtime synthesis/execution of code strings: `Invoke-Expression`, `iex`, `& $str`, `. $str`, `[scriptblock]::Create` on non-literal input | SEC-001 |
+| KS-02 | Deny fetch-and-execute chains (download piped or redirected straight into execution) in any spelling | SEC-002, SEC-003, SEC-004 |
+| KS-03 | Downloads land on managed paths and verify a pinned SHA-256 hash or Authenticode signature before any use | SEC-004, SEC-020 |
+| KS-04 | Deny `-EncodedCommand` and base64/hex decode-execute of code; transport encoding wraps data only | SEC-005 |
+| KS-05 | Deny LOLBin invocation (`mshta`, `rundll32`, `regsvr32`, `installutil`) with foreign scripts, paths, or DLLs | SEC-006 |
+| KS-06 | Persistence objects (tasks, Run keys, services, WMI subscriptions) must target signed, owned, version-controlled payloads and require change approval | SEC-007, SEC-008 |
+| KS-07 | Deny Defender/antivirus setting changes (including exclusions) outside an approved security exception record | SEC-009 |
+| KS-08 | Deny widening `Set-ExecutionPolicy` (Bypass/Unrestricted at machine or user scope); fix signing and deployment instead | SEC-010 |
+| KS-09 | Credentials originate from SecretManagement-backed vaults; hard-coded or file-borne secrets are denied | SEC-014 |
+| KS-10 | `ConvertTo-SecureString -AsPlainText -Force` permitted only in fixtures with obviously synthetic values, never production paths | SEC-014 |
+| KS-11 | Secrets never reach command lines, host output, transcripts, or ErrorRecords; observed secrets are rotated | SEC-015, SEC-016 |
+| KS-12 | Private-key export is non-default: requires custodian approval, AES-256 PFX, out-of-band passphrase delivery | SEC-017 |
+| KS-13 | Enforce a TLS 1.2+ floor; downgrading protocol selection below platform defaults is denied | SEC-012 |
+| KS-14 | Certificate trust failures are repaired (root CA import, SAN/name fixes), never suppressed | SEC-013 |
+| KS-15 | `-SkipCertificateCheck` or validation-returning-`$true` callbacks require inline reviewed justification and are barred from production paths | SEC-013 |
+| KS-16 | Pin egress: endpoints come from documented allow-lists; URLs derived from untrusted input are denied | SEC-024 |
+| KS-17 | Deny executing freshly downloaded binaries directly; installation flows through verified packages or documented installers | SEC-020 |
+| KS-18 | Stealth UI flags (hidden windows, suppressed consoles) on foreign binaries require written justification; default is observable execution | SEC-011 |
+| KS-19 | Default emission must function under Constrained Language Mode; FullLanguage assumptions are stated and checked | SEC-022 |
+| KS-20 | Coexist with AppLocker/WDAC: no path games, stream tricks, or trusted-proxy abuse; distribute signed artifacts | — |
+| KS-21 | Identity/domain/tenant-scope mutations require recorded human approval (ticket, approver, scope, rollback) before execution | — |
+| KS-22 | Production runs leave an audit trail: no console clearing, no log deletion, attribution preserved in logs and output | SEC-023 |
+| KS-23 | Deny disabling or tampering with telemetry (ETW, transcription, script-block logging, EDR agents) for convenience | SEC-023 |
+| KS-24 | Deny obfuscation aimed at scanners or AMSI (concat-chunking, encoding layers, charmaps); code must read plainly in 4104 events | — |
+| KS-25 | Destructive/bulk operations verify preconditions (existence, scope match, backup taken) and honor `-WhatIf`; unverifiable bulk actions block pending dry-run evidence | SAFE-001, SAFE-013, SAFE-014 |
 
 Cross-references: surfacing denials follows the `ERR-` series (fail loudly, enrich records);
 execution-safety framing is the `SAFE-` series; repeat-run stability is the `IDEM-` series;
