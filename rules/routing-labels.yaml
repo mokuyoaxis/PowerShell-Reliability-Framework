@@ -494,7 +494,7 @@ rules:
   resident: false
 - id: SEC-021
   risk: [W, N, C]
-  topics: [identity, network, security]
+  topics: [registry, identity, network, security]
   depends_on: [SEC-025]
   resident: false
 - id: SEC-022
