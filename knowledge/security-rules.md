@@ -194,11 +194,11 @@ verification and auditability.**
 | KS-17 | Deny executing freshly downloaded binaries directly; installation flows through verified packages or documented installers | SEC-020 |
 | KS-18 | Stealth UI flags (hidden windows, suppressed consoles) on foreign binaries require written justification; default is observable execution | SEC-011 |
 | KS-19 | Default emission must function under Constrained Language Mode; FullLanguage assumptions are stated and checked | SEC-022 |
-| KS-20 | Coexist with AppLocker/WDAC: no path games, stream tricks, or trusted-proxy abuse; distribute signed artifacts | — |
-| KS-21 | Identity/domain/tenant-scope mutations require recorded human approval (ticket, approver, scope, rollback) before execution | — |
+| KS-20 | Coexist with AppLocker/WDAC: no path games, stream tricks, or trusted-proxy abuse; distribute signed artifacts | no canonical rule (backlog) |
+| KS-21 | Identity/domain/tenant-scope mutations require recorded human approval (ticket, approver, scope, rollback) before execution | no canonical rule (backlog) |
 | KS-22 | Production runs leave an audit trail: no console clearing, no log deletion, attribution preserved in logs and output | SEC-023 |
 | KS-23 | Deny disabling or tampering with telemetry (ETW, transcription, script-block logging, EDR agents) for convenience | SEC-023 |
-| KS-24 | Deny obfuscation aimed at scanners or AMSI (concat-chunking, encoding layers, charmaps); code must read plainly in 4104 events | — |
+| KS-24 | Deny obfuscation aimed at scanners or AMSI (concat-chunking, encoding layers, charmaps); code must read plainly in 4104 events | no canonical rule (backlog) |
 | KS-25 | Destructive/bulk operations verify preconditions (existence, scope match, backup taken) and honor `-WhatIf`; unverifiable bulk actions block pending dry-run evidence | SAFE-001, SAFE-013, SAFE-014 |
 
 Cross-references: surfacing denials follows the `ERR-` series (fail loudly, enrich records);
