@@ -12,9 +12,14 @@ Gates:
                    rubric criterion_id uniqueness, positive rubric weights
   5. examples    - bad/good 1:1 pairing; banner rule refs resolve
   6. language    - agent-facing files are CJK-free (docs/ and README exempt)
+  7. routing     - rules/routing-labels.yaml labels every rule exactly once, in
+                   corpus order; risk/topics drawn from the frozen vocabularies;
+                   depends_on resolves; resident count matches; rules_blob
+                   matches the current rule corpus
 
 Usage: python3 tools/validate.py   (exit 0 = PASS, 1 = FAIL)
 """
+import hashlib
 import json
 import re
 import sys
@@ -219,6 +224,75 @@ for f in sorted((ROOT / "examples").rglob("*.ps1")):
         if tok.startswith(("COMP", "SAFE", "IDEM", "SEC", "ERR", "HD")) and tok not in corpus_ids:
             err(f"{f.relative_to(ROOT)}: banner references unknown rule {tok}")
 
+# ------------------------------------------------------------------ routing --
+RISK_VOCAB = ["R", "W", "D", "N", "C"]
+TOPIC_VOCAB = ["language", "errors", "filesystem", "registry", "identity", "cloud",
+               "network", "service", "automation", "security", "transport"]
+labels_path = ROOT / "rules" / "routing-labels.yaml"
+label_count = 0
+if yaml is not None and not labels_path.exists():
+    err("rules/routing-labels.yaml missing")
+elif yaml is not None:
+    try:
+        ldoc = yaml.safe_load(labels_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        ldoc = None
+        err(f"routing-labels.yaml failed to parse: {exc}")
+    if isinstance(ldoc, dict):
+        raw = (ROOT / "rules" / "reliability-rules.yaml").read_bytes().replace(b"\r\n", b"\n")
+        blob = hashlib.sha1(b"blob %d\0" % len(raw) + raw).hexdigest()
+        if ldoc.get("rules_blob") != blob:
+            err(f"routing-labels.yaml rules_blob {ldoc.get('rules_blob')} does not match "
+                f"reliability-rules.yaml ({blob}); re-review labels against the corpus")
+        if ldoc.get("risk_vocabulary") != RISK_VOCAB:
+            err("routing-labels.yaml risk_vocabulary drifted from the frozen set")
+        if ldoc.get("topic_vocabulary") != TOPIC_VOCAB:
+            err("routing-labels.yaml topic_vocabulary drifted from the frozen set")
+        entries = ldoc.get("rules") or []
+        label_ids = [str(e.get("id")) if isinstance(e, dict) else "<non-object>" for e in entries]
+        label_count = len(label_ids)
+        if label_ids != rule_ids:
+            missing = sorted(set(rule_ids) - set(label_ids))
+            extra = sorted(set(label_ids) - set(rule_ids))
+            dup = sorted({i for i in label_ids if label_ids.count(i) > 1})
+            err(f"routing labels must cover every rule once in corpus order "
+                f"(missing {missing[:5]}, unknown {extra[:5]}, duplicate {dup[:5]})")
+        resident = 0
+        for e in entries:
+            if not isinstance(e, dict):
+                continue
+            lid = str(e.get("id"))
+            keys = set(e) - {"id"}
+            if keys != {"risk", "topics", "depends_on", "resident"}:
+                err(f"{lid}: routing label keys {sorted(keys)} != "
+                    f"['depends_on', 'resident', 'risk', 'topics']")
+            for field, vocab in (("risk", RISK_VOCAB), ("topics", TOPIC_VOCAB)):
+                vals = e.get(field)
+                if not isinstance(vals, list) or not vals:
+                    err(f"{lid}: {field} must be a non-empty list")
+                    continue
+                bad = [v for v in vals if v not in vocab]
+                if bad:
+                    err(f"{lid}: {field} outside frozen vocab: {bad}")
+                if len(vals) != len(set(vals)):
+                    err(f"{lid}: duplicate {field} values")
+            deps = e.get("depends_on")
+            if not isinstance(deps, list):
+                err(f"{lid}: depends_on must be a list")
+            else:
+                for d in deps:
+                    if d == lid:
+                        err(f"{lid}: depends_on references itself")
+                    elif d not in corpus_ids:
+                        err(f"{lid}: depends_on references unknown rule {d}")
+            if not isinstance(e.get("resident"), bool):
+                err(f"{lid}: resident must be true or false")
+            elif e["resident"]:
+                resident += 1
+        if ldoc.get("resident_count") != resident:
+            err(f"header resident_count={ldoc.get('resident_count')} but {resident} "
+                f"labels are resident")
+
 # ----------------------------------------------------------------- language --
 AGENT_FACING = [ROOT / "SKILL.md"]
 AGENT_FACING += sorted((ROOT / "knowledge").glob("*.md"))
@@ -233,6 +307,7 @@ for p in AGENT_FACING:
 print(f"rules: {len(rule_ids)} {category_counts} | with detection: {det_count}")
 print(f"benchmark cases: {len(case_ids)} {case_dist}")
 print(f"example pairs: {len(bad_slugs)}")
+print(f"routing labels: {label_count}")
 if errors:
     print(f"\nFAIL - {len(errors)} issue(s):")
     for e in errors:
