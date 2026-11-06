@@ -396,36 +396,46 @@ keep that rests on a single behaviour line.
 ### 6.2 Diagnostic before and after
 
 Same selection logic as section 3, run with the `feat/routing-labels` labels
-(still `review_status: candidate`) against this branch's cases. Selection does
-not depend on `related_rules`, so the per-case selected-rule count is the same
-on both sides: 66.68 on average (60-78) topic-only, 72.91 (67-83) with the
-`depends_on` closure.
+(still `review_status: candidate`) against this branch's cases. Two label
+versions are reported: `9920336` (the labels this section was first measured
+with) and `60107c3`, which adds the `registry` topic to SEC-021. Selection does
+not depend on `related_rules`, so within one label version the per-case
+selected-rule count is the same before and after the case edits:
+
+| Labels | Selected rules per case, topic only | With `depends_on` closure |
+|---|---|---|
+| `9920336` | 66.68 average (60-78) | 72.91 (67-83) |
+| `60107c3` | 66.77 average (60-78) | 73.09 (67-83) |
 
 Routable rules only (references to the 56 always-selected rules dropped; this
 is the true routing recall):
 
-| | Topic only | With dependency closure |
-|---|---|---|
-| before (`e5cc8d4`) | 86 / 90 | 90 / 90 |
-| after this section | 95 / 101 | 100 / 101 |
+| | Labels | Topic only | With dependency closure |
+|---|---|---|---|
+| before (`e5cc8d4`) | `9920336` | 86 / 90 | 90 / 90 |
+| after this section | `9920336` | 95 / 101 | 100 / 101 |
+| after this section | `60107c3` | 96 / 101 | 101 / 101 |
 
 All references:
 
-| | Topic only | With dependency closure | Distinct rules referenced |
-|---|---|---|---|
-| before (`e5cc8d4`) | 323 / 327 | 327 / 327 | 79 |
-| after this section | 238 / 244 | 243 / 244 | 73 |
+| | Labels | Topic only | With dependency closure | Distinct rules referenced |
+|---|---|---|---|---|
+| before (`e5cc8d4`) | `9920336` | 323 / 327 | 327 / 327 | 79 |
+| after this section | `9920336` | 238 / 244 | 243 / 244 | 73 |
+| after this section | `60107c3` | 239 / 244 | 244 / 244 | 73 |
 
 The always-selected references fall from 237 to 143; replacements move 11
 references into routable rules, so the routable denominator grows from 90 to
-101. New topic-only misses, both routing gaps rather than wrong references:
+101. New topic-only misses with the `9920336` labels, both routing gaps rather
+than wrong references:
 
-| Case | Rule | Case topic | Rule's candidate topics | Closure |
-|---|---|---|---|---|
-| BENCH-AUT-002 | SAFE-005 | automation | filesystem | hit |
-| BENCH-REG-008 | SEC-021 | registry | network, security | miss |
+| Case | Rule | Case topic | Rule's candidate topics (`9920336`) | Closure | Status |
+|---|---|---|---|---|---|
+| BENCH-AUT-002 | SAFE-005 | automation | filesystem | hit | open (closure only) |
+| BENCH-REG-008 | SEC-021 | registry | identity, network, security | miss | resolved by `feat/routing-labels` `60107c3`, which adds the `registry` topic to SEC-021 |
 
-BENCH-REG-008 SEC-021 is the only reference that the closure does not reach.
+With the `60107c3` labels BENCH-REG-008 SEC-021 is hit topic-only, and the
+closure reaches every reference.
 
 ### 6.3 Open questions
 
