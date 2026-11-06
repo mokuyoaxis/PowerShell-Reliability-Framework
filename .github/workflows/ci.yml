@@ -27,6 +27,9 @@ jobs:
       - name: L0 package integrity
         run: python tools/validate.py
 
+      - name: L0 knowledge cross-references
+        run: python tools/check-knowledge-ids.py
+
       - name: L1 rule self-test
         run: python tools/rule-selftest.py
 
