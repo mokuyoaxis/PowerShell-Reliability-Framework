@@ -1,6 +1,19 @@
 # Compatibility Matrix: Windows PowerShell 5.1 vs PowerShell 7.x (COMP Rules)
 
-Windows ships **two** PowerShells, and they disagree about syntax, defaults, cmdlets, and modules. Every rule in this framework carrying the `COMP-` prefix exists because an agent assumed one engine while the target host ran the other. Read the engine identity off `$PSVersionTable` before emitting a single command (COMP-01), then consult this chapter. Rule index used throughout: COMP-01 know your engine; COMP-02 guard the `$Is*` automatic variables; COMP-03 zero WMI cmdlets in dual-runtime code; COMP-04 pin encodings explicitly; COMP-05 verify modules and their external dependencies per host; COMP-06 parse-gate against the oldest supported engine; COMP-07 treat experimental features as absent; COMP-08 choose the remoting transport deliberately; COMP-09 expect parameter-name drift between engines; COMP-10 prefer the modern equivalent because it usually exists in 5.1 too.
+Windows ships **two** PowerShells, and they disagree about syntax, defaults, cmdlets, and modules. Every rule in this framework carrying the `COMP-` prefix exists because an agent assumed one engine while the target host ran the other. Read the engine identity off `$PSVersionTable` before emitting a single command (KC-01), then consult this chapter. Seed index used throughout (seed numbers are local to this chapter, not rule IDs; the table below maps each seed to the canonical `COMP-` rules in `rules/reliability-rules.yaml`): KC-01 know your engine; KC-02 guard the `$Is*` automatic variables; KC-03 zero WMI cmdlets in dual-runtime code; KC-04 pin encodings explicitly; KC-05 verify modules and their external dependencies per host; KC-06 parse-gate against the oldest supported engine; KC-07 treat experimental features as absent; KC-08 choose the remoting transport deliberately; KC-09 expect parameter-name drift between engines; KC-10 prefer the modern equivalent because it usually exists in 5.1 too.
+
+| Seed | Canonical rules |
+|---|---|
+| KC-01 | COMP-017 |
+| KC-02 | COMP-011, COMP-021 |
+| KC-03 | COMP-014, COMP-015, COMP-016 |
+| KC-04 | COMP-009 |
+| KC-05 | COMP-019, COMP-020 |
+| KC-06 | COMP-001, COMP-002, COMP-003, COMP-004, COMP-005, COMP-017 |
+| KC-07 | COMP-024 |
+| KC-08 | COMP-013, COMP-018 |
+| KC-09 | COMP-012 |
+| KC-10 | COMP-010, COMP-014, COMP-016 |
 
 ## 1. Choosing the Target Runtime
 
@@ -12,29 +25,29 @@ Windows ships **two** PowerShells, and they disagree about syntax, defaults, cmd
 | Distribution | Inbox in Windows 10/11 and Server 2016+; cannot be uninstalled or upgraded in place | Separate MSI/package/Store install; sits side by side, never modifies 5.1 |
 | Release model | Frozen forever; fixes arrive only through Windows servicing | Roughly annual minors; even-numbered minors are LTS (7.2, 7.4) |
 | Language surface | Frozen at 5.1 syntax | Adds `&&`, ternary, `??`, null-conditional members, `-Parallel`, `.Clean()`, more |
-| Remoting transports | WinRM only | WinRM plus SSH-based remoting (COMP-08) |
+| Remoting transports | WinRM only | WinRM plus SSH-based remoting (KC-08) |
 
-**Target 5.1 only when:** the environment forbids third-party software; a vendor contract or GAC'd .NET Framework assembly demands the Desktop edition; or you are maintaining existing 5.1 automation with no upgrade window. **Target 7.x for:** anything newly written, especially agent-driven tooling; cross-platform fleets; current gallery modules (Az.*, Microsoft.Graph.*, Pester 5); and performance-sensitive work (startup time, JSON handling, parallel loops). Windows administration is fully in scope for 7.x on Windows 10/11 and Server once the relevant RSAT modules are present. Never write "PowerShell" without knowing which engine executes it — probe first, then commit to a syntax level (COMP-01).
+**Target 5.1 only when:** the environment forbids third-party software; a vendor contract or GAC'd .NET Framework assembly demands the Desktop edition; or you are maintaining existing 5.1 automation with no upgrade window. **Target 7.x for:** anything newly written, especially agent-driven tooling; cross-platform fleets; current gallery modules (Az.*, Microsoft.Graph.*, Pester 5); and performance-sensitive work (startup time, JSON handling, parallel loops). Windows administration is fully in scope for 7.x on Windows 10/11 and Server once the relevant RSAT modules are present. Never write "PowerShell" without knowing which engine executes it — probe first, then commit to a syntax level (KC-01).
 
 ## 2. Feature Delta: 5.1 Versus 7.x
 
 | Capability | Windows PowerShell 5.1 | PowerShell 7.x | Rule |
 |---|---|---|---|
-| Pipeline chain operators | Not parsed; `&&` is a syntax error | `a && b` runs on success, failure-chaining via the doubled-bar operator | COMP-06 |
-| Ternary conditional | Absent | `$cond ? $a : $b` | COMP-06 |
-| Null-coalescing | Absent | `$x ?? 'fallback'` and assign-if-null `$x ??= 'init'` | COMP-06 |
-| Null-conditional member/index | Absent | `$obj?.Prop`, `$arr?[0]`, `$obj?.Method()` | COMP-06 |
-| Parallel pipeline | Absent | `ForEach-Object -Parallel` with `-ThrottleLimit` (default 5) | COMP-06 |
+| Pipeline chain operators | Not parsed; `&&` is a syntax error | `a && b` runs on success, failure-chaining via the doubled-bar operator | KC-06 |
+| Ternary conditional | Absent | `$cond ? $a : $b` | KC-06 |
+| Null-coalescing | Absent | `$x ?? 'fallback'` and assign-if-null `$x ??= 'init'` | KC-06 |
+| Null-conditional member/index | Absent | `$obj?.Prop`, `$arr?[0]`, `$obj?.Method()` | KC-06 |
+| Parallel pipeline | Absent | `ForEach-Object -Parallel` with `-ThrottleLimit` (default 5) | KC-06 |
 | ThreadJob alternative | `Start-ThreadJob` installable from the Gallery | Built-in ecosystem; ThreadJob still works | — |
-| `Test-Connection` shape | `-ComputerName`, emits `Win32_PingStatus` (`.ResponseTime`, `.StatusCode`); credential knobs because it rides WMI | `-TargetName`, emits `PingStatus` (`.Latency`, `.Status`); raw ICMP adds `-Continuous`, `-MtuSize`, `-Repeat` (7.2+) | COMP-09 |
-| Deep error inspection | `$Error[0]` plus `Format-List * -Force` spelunking | `Get-Error [-Newest N]`; `ConciseView` is the default `$ErrorView` | COMP-01 |
+| `Test-Connection` shape | `-ComputerName`, emits `Win32_PingStatus` (`.ResponseTime`, `.StatusCode`); credential knobs because it rides WMI | `-TargetName`, emits `PingStatus` (`.Latency`, `.Status`); raw ICMP adds `-Continuous`, `-MtuSize`, `-Repeat` (7.2+) | KC-09 |
+| Deep error inspection | `$Error[0]` plus `Format-List * -Force` spelunking | `Get-Error [-Newest N]`; `ConciseView` is the default `$ErrorView` | KC-01 |
 | String joining | Hand-rolled projection then `-join` | `Join-String` with `-Property`, `-Separator`, `-Format` | — |
 | JSON typing | `ConvertFrom-Json` always yields `PSCustomObject`; duplicate or case-clashing keys throw | `-AsHashtable` yields a hashtable, tolerates keys that are illegal property names, parses faster | — |
-| File-write defaults | `Out-File` and `>` emit UTF-16LE ("Unicode"); `Set-Content` emits the ANSI codepage; `Export-Csv` emits ASCII | `utf8NoBOM` across the file-writing cmdlets | COMP-04 |
+| File-write defaults | `Out-File` and `>` emit UTF-16LE ("Unicode"); `Set-Content` emits the ANSI codepage; `Export-Csv` emits ASCII | `utf8NoBOM` across the file-writing cmdlets | KC-04 |
 | Control-character cleanup | Regex: `-replace '\p{Cc}', ''` | `.Clean()` string method (7.4+) | — |
-| OS automatic variables | `$IsWindows`, `$IsLinux`, `$IsMacOS` DO NOT EXIST (evaluate to null; strict mode raises an error) | Real booleans reflecting the host OS | COMP-02 |
-| SSH remoting | WinRM only | `New-PSSession -HostName`, `-SSHTransport`, key-based auth, any OS pairing | COMP-08 |
-| Experimental features | Unsupported | `Get-ExperimentalFeature` / `Enable-ExperimentalFeature`; catalog changes per minor version | COMP-07 |
+| OS automatic variables | `$IsWindows`, `$IsLinux`, `$IsMacOS` DO NOT EXIST (evaluate to null; strict mode raises an error) | Real booleans reflecting the host OS | KC-02 |
+| SSH remoting | WinRM only | `New-PSSession -HostName`, `-SSHTransport`, key-based auth, any OS pairing | KC-08 |
+| Experimental features | Unsupported | `Get-ExperimentalFeature` / `Enable-ExperimentalFeature`; catalog changes per minor version | KC-07 |
 
 ### 2.1 Minimal Probes
 
@@ -53,7 +66,7 @@ $servers | ForEach-Object -Parallel {
 } -ThrottleLimit 8
 ```
 
-Inside `-Parallel`, `$_` flows automatically but outer variables need `$using:` and caller-defined functions are invisible; completion order is not guaranteed. The honest 5.1 fallback is the Gallery `ThreadJob` module (`Start-ThreadJob`) or a plain `foreach` — pick one code path deliberately rather than shipping syntax 5.1 cannot parse (COMP-06).
+Inside `-Parallel`, `$_` flows automatically but outer variables need `$using:` and caller-defined functions are invisible; completion order is not guaranteed. The honest 5.1 fallback is the Gallery `ThreadJob` module (`Start-ThreadJob`) or a plain `foreach` — pick one code path deliberately rather than shipping syntax 5.1 cannot parse (KC-06).
 
 ```powershell
 Test-Connection -ComputerName SRV01 -Count 2   # 5.1: Win32_PingStatus; .ResponseTime / .StatusCode
@@ -76,7 +89,7 @@ $cfg = Get-Content app.json -Raw | ConvertFrom-Json -AsHashtable   # 7.x hashtab
 ```powershell
 $pasted = "INV-0042`0`bX"          # stray NUL and backspace scraped from a log
 $pasted.Clean()                    # 7.4+ only: control characters stripped
-$pasted -replace '\p{Cc}', ''      # identical outcome on 5.1 and every 7.x (COMP-10)
+$pasted -replace '\p{Cc}', ''      # identical outcome on 5.1 and every 7.x (KC-10)
 ```
 
 ```powershell
@@ -85,15 +98,15 @@ elseif ($env:OS -eq 'Windows_NT') { 'Windows PowerShell 5.1' }
 else { 'PowerShell 7 on Linux/macOS' }
 ```
 
-The OS probe works because `-and` short-circuits: on 5.1 the first clause is false, so `$IsWindows` is never evaluated — even under `Set-StrictMode` (COMP-02). Referencing `$IsWindows` bare on 5.1 yields null, so `if (-not $IsWindows)` wrongly takes the non-Windows branch on a Windows box; that single mistake justifies the whole COMP-02 rule.
+The OS probe works because `-and` short-circuits: on 5.1 the first clause is false, so `$IsWindows` is never evaluated — even under `Set-StrictMode` (KC-02). Referencing `$IsWindows` bare on 5.1 yields null, so `if (-not $IsWindows)` wrongly takes the non-Windows branch on a Windows box; that single mistake justifies the whole KC-02 rule.
 
 ## 3. Cmdlet Migrations
 
-PowerShell 7 deleted the entire WMI cmdlet family: `Get-WmiObject`, `Set-WmiInstance`, `Invoke-WmiMethod`, `Remove-WmiObject`, and `Register-WmiEvent` throw `CommandNotFound`, and the `[wmi]` / `[wmiclass]` accelerators are gone with them. The CIM replacements have existed since Windows PowerShell 3.0, so writing CIM-first costs nothing on 5.1 and survives 7.x untouched (COMP-03, COMP-10). Expect behavioral deltas: `Get-CimInstance` returns deserialized snapshot instances whose methods are not directly invocable, WMI's `__SERVER` property becomes `PSComputerName`, `-Filter` still accepts the same WQL, and ancient DCOM-only endpoints need `New-CimSession -SessionOption (New-CimSessionOption -Protocol DCOM)`.
+PowerShell 7 deleted the entire WMI cmdlet family: `Get-WmiObject`, `Set-WmiInstance`, `Invoke-WmiMethod`, `Remove-WmiObject`, and `Register-WmiEvent` throw `CommandNotFound`, and the `[wmi]` / `[wmiclass]` accelerators are gone with them. The CIM replacements have existed since Windows PowerShell 3.0, so writing CIM-first costs nothing on 5.1 and survives 7.x untouched (KC-03, KC-10). Expect behavioral deltas: `Get-CimInstance` returns deserialized snapshot instances whose methods are not directly invocable, WMI's `__SERVER` property becomes `PSComputerName`, `-Filter` still accepts the same WQL, and ancient DCOM-only endpoints need `New-CimSession -SessionOption (New-CimSessionOption -Protocol DCOM)`.
 
 | Removed or deprecated | Write instead | Notes |
 |---|---|---|
-| `Get-WmiObject` | `Get-CimInstance` | Works in 5.1 AND 7.x; WMI form deleted in 7 (COMP-03) |
+| `Get-WmiObject` | `Get-CimInstance` | Works in 5.1 AND 7.x; WMI form deleted in 7 (KC-03) |
 | `Set-WmiInstance` | `Set-CimInstance` | Same story |
 | `Invoke-WmiMethod` | `Invoke-CimMethod` | Methods are no longer attached to the objects themselves |
 | `Remove-WmiObject` | `Remove-CimInstance` | |
@@ -108,7 +121,7 @@ $spooler = Get-CimInstance Win32_Service -Filter "Name='Spooler'"
 Invoke-CimMethod -InputObject $spooler -MethodName StopService    # explicit invocation required
 ```
 
-`Get-WinEvent` exists in both engines, which makes it the canonical COMP-10 showcase. Two traps for agents: it emits a non-terminating error when zero events match (silence it or you will report false failures), and results arrive newest-first unless you pass `-Oldest` for chronological processing.
+`Get-WinEvent` exists in both engines, which makes it the canonical KC-10 showcase. Two traps for agents: it emits a non-terminating error when zero events match (silence it or you will report false failures), and results arrive newest-first unless you pass `-Oldest` for chronological processing.
 
 ```powershell
 Get-WinEvent -FilterHashtable @{
@@ -120,7 +133,7 @@ Get-WinEvent -FilterHashtable @{
 
 ## 4. Module Availability Reality
 
-A module name resolving is not the same as a capability existing. Classify every dependency before promising it (COMP-05):
+A module name resolving is not the same as a capability existing. Classify every dependency before promising it (KC-05):
 
 | Tier | Examples | Provenance | Guidance |
 |---|---|---|---|
@@ -139,7 +152,7 @@ Add-WindowsCapability -Online -Name Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
 Install-WindowsFeature RSAT-AD-PowerShell
 ```
 
-After installation, `Get-Module -ListAvailable ActiveDirectory` succeeding proves nothing about usability: the first `Get-ADUser` performs Kerberos authentication and LDAP (389/636) against a discoverable domain controller. An offline administrative workstation imports the module happily and then fails on every call — module present, dependency absent. COMP-05 therefore requires probing both layers, module AND dependency, on the target host before claiming the capability. Gallery notes: 5.1 ships a fossilized inbox Pester 3.4 that must never be updated in place — install Pester 5.x to the user scope and import it explicitly or the inbox copy shadows it; Az.* runs on both editions but rewards 7.x startup and memory behavior; the Microsoft.Graph.* SDK nominally targets both editions on Windows, yet its authentication and dependency stack behaves most reliably on 7.x.
+After installation, `Get-Module -ListAvailable ActiveDirectory` succeeding proves nothing about usability: the first `Get-ADUser` performs Kerberos authentication and LDAP (389/636) against a discoverable domain controller. An offline administrative workstation imports the module happily and then fails on every call — module present, dependency absent. KC-05 therefore requires probing both layers, module AND dependency, on the target host before claiming the capability. Gallery notes: 5.1 ships a fossilized inbox Pester 3.4 that must never be updated in place — install Pester 5.x to the user scope and import it explicitly or the inbox copy shadows it; Az.* runs on both editions but rewards 7.x startup and memory behavior; the Microsoft.Graph.* SDK nominally targets both editions on Windows, yet its authentication and dependency stack behaves most reliably on 7.x.
 
 ## 5. Execution Policy Applicability
 
@@ -149,11 +162,11 @@ After installation, `Get-Module -ListAvailable ActiveDirectory` succeeding prove
 | PowerShell 7 on Windows | Yes, in its own store | Unset defaults to `RemoteSigned`; registry under `PowerShellCore\ShellIds\Microsoft.PowerShell`; GPO scopes override |
 | Any engine on Linux/macOS | No | `Get-ExecutionPolicy` returns `Undefined`; `Set-ExecutionPolicy` throws `PlatformNotSupportedException`; scripts run regardless |
 
-Group Policy scopes (`MachinePolicy`, `UserPolicy`) bind both engines on Windows and cannot be overridden locally; `Process`, `CurrentUser`, and `LocalMachine` are per-engine settings, which is why "I already ran Set-ExecutionPolicy" fixes one console and not the other. Automation must never repair policy by mutating machine state: invoke with `pwsh -ExecutionPolicy Bypass -File tool.ps1` or use `Set-ExecutionPolicy -Scope Process Bypass` inside the session, and treat policy state as part of the environment probe (COMP-05). Remember that under `RemoteSigned`, files carrying the Mark-of-the-Web Zone.Identifier must be signed on both engines — extraction tools that strip zones silently change what runs.
+Group Policy scopes (`MachinePolicy`, `UserPolicy`) bind both engines on Windows and cannot be overridden locally; `Process`, `CurrentUser`, and `LocalMachine` are per-engine settings, which is why "I already ran Set-ExecutionPolicy" fixes one console and not the other. Automation must never repair policy by mutating machine state: invoke with `pwsh -ExecutionPolicy Bypass -File tool.ps1` or use `Set-ExecutionPolicy -Scope Process Bypass` inside the session, and treat policy state as part of the environment probe (KC-05). Remember that under `RemoteSigned`, files carrying the Mark-of-the-Web Zone.Identifier must be signed on both engines — extraction tools that strip zones silently change what runs.
 
 ## 6. Writing Dual-Runtime Scripts
 
-Declare the floor with `#Requires` so unsupported hosts fail loudly instead of mysteriously (COMP-06):
+Declare the floor with `#Requires` so unsupported hosts fail loudly instead of mysteriously (KC-06):
 
 ```powershell
 #Requires -Version 5.1               # floor for dual-runtime scripts
@@ -161,7 +174,7 @@ Declare the floor with `#Requires` so unsupported hosts fail loudly instead of m
 # To demand 7.x exclusively:         #Requires -Version 7.0
 ```
 
-`#Requires` cannot rescue you from syntax: the 5.1 parser rejects `&&`, ternaries, `?.`, and `??` ANYWHERE in the file, including inside version-guarded branches that would never execute. Syntax-level divergence therefore demands file splitting, not conditional execution (COMP-06):
+`#Requires` cannot rescue you from syntax: the 5.1 parser rejects `&&`, ternaries, `?.`, and `??` ANYWHERE in the file, including inside version-guarded branches that would never execute. Syntax-level divergence therefore demands file splitting, not conditional execution (KC-06):
 
 ```powershell
 # runner.ps1 — parses cleanly under BOTH engines
@@ -177,32 +190,32 @@ Within the shared, parse-safe layer, reach for these replacements first:
 
 | Instead of (5.1-era) | Write | Why |
 |---|---|---|
-| `Get-WmiObject` / `Invoke-WmiMethod` / `Set-WmiInstance` / `Remove-WmiObject` | The matching `*-Cim*` cmdlets | Exist in 5.1 AND 7.x; WMI forms deleted in 7 (COMP-03) |
+| `Get-WmiObject` / `Invoke-WmiMethod` / `Set-WmiInstance` / `Remove-WmiObject` | The matching `*-Cim*` cmdlets | Exist in 5.1 AND 7.x; WMI forms deleted in 7 (KC-03) |
 | `Register-WmiEvent` | `Register-CimIndicationEvent` | Same rationale |
-| `[wmiclass]` / `[wmi]` casts | `Get-CimClass` / `Get-CimInstance` | Accelerators removed in 7 (COMP-03) |
-| `Get-EventLog` / `Write-EventLog` | `Get-WinEvent` / .NET EventLog API | Removed in 7.x (COMP-03) |
-| Bare `Out-File`, `>`, `Set-Content`, `Export-Csv` | Explicit `-Encoding UTF8` or `ASCII` | Engine defaults diverge (COMP-04); note `utf8NoBOM` itself is a 7-only argument |
-| `Test-Connection -ComputerName` | Version branch, or `System.Net.NetworkInformation.Ping` | Identical semantics on both engines (COMP-09) |
-| `ForEach-Object -Parallel` | `Start-ThreadJob` (installs on 5.1) or plain `foreach` | One code path, both engines (COMP-06) |
-| Bare `$IsWindows` reads | `$env:OS -eq 'Windows_NT'` or PSEdition-gated access | Variable undefined on 5.1 (COMP-02) |
+| `[wmiclass]` / `[wmi]` casts | `Get-CimClass` / `Get-CimInstance` | Accelerators removed in 7 (KC-03) |
+| `Get-EventLog` / `Write-EventLog` | `Get-WinEvent` / .NET EventLog API | Removed in 7.x (KC-03) |
+| Bare `Out-File`, `>`, `Set-Content`, `Export-Csv` | Explicit `-Encoding UTF8` or `ASCII` | Engine defaults diverge (KC-04); note `utf8NoBOM` itself is a 7-only argument |
+| `Test-Connection -ComputerName` | Version branch, or `System.Net.NetworkInformation.Ping` | Identical semantics on both engines (KC-09) |
+| `ForEach-Object -Parallel` | `Start-ThreadJob` (installs on 5.1) or plain `foreach` | One code path, both engines (KC-06) |
+| Bare `$IsWindows` reads | `$env:OS -eq 'Windows_NT'` or PSEdition-gated access | Variable undefined on 5.1 (KC-02) |
 | `Get-Error` | `$Error[0]` plus `Format-List * -Force` | Closest 5.1 view of the error record |
 
 ## 7. Pre-Flight Probe Checklist
 
-Run every probe on the TARGET host, not the authoring host, and attach the output to the task record — a compatibility claim without probe evidence is an assumption (COMP-01):
+Run every probe on the TARGET host, not the authoring host, and attach the output to the task record — a compatibility claim without probe evidence is an assumption (KC-01):
 
 | Probe | Pass criterion | Rule |
 |---|---|---|
-| Record engine identity via `$PSVersionTable` (version + edition) | Chosen syntax and parameters match the observed engine | COMP-01 |
-| Parse the script under `powershell.exe` with `[scriptblock]::Create(...)` | No `ParseException`; catches leaked `&&`, ternary, `??` syntax | COMP-06 |
-| Scan for dead cmdlets: `*-Wmi*`, `[wmiclass]`, `[wmi]`, `Get-EventLog` | Zero hits | COMP-03 |
-| Audit every file-writing cmdlet for an explicit `-Encoding` argument | No reliance on engine defaults | COMP-04 |
-| Inspect each `$IsWindows` / `$IsLinux` / `$IsMacOS` reference for a guard | None reachable unguarded by 5.1 | COMP-02 |
-| Probe module presence AND dependency (RSAT installed, DC line-of-sight, policy state) | Both layers verified | COMP-05 |
-| Search shipped scripts for `Enable-ExperimentalFeature` reliance | None; experimental features treated as absent | COMP-07 |
-| Name the remoting transport per hop: WinRM (`-ComputerName`) or SSH (`-HostName`) | Matches fleet reality | COMP-08 |
-| Spot-check drifted parameters (e.g. `Test-Connection`) against the target engine's help | Names valid per engine | COMP-09 |
-| Review WMI/event-log code for CIM / `Get-WinEvent` modernization | Future-proofed even where 5.1 suffices today | COMP-10 |
+| Record engine identity via `$PSVersionTable` (version + edition) | Chosen syntax and parameters match the observed engine | KC-01 |
+| Parse the script under `powershell.exe` with `[scriptblock]::Create(...)` | No `ParseException`; catches leaked `&&`, ternary, `??` syntax | KC-06 |
+| Scan for dead cmdlets: `*-Wmi*`, `[wmiclass]`, `[wmi]`, `Get-EventLog` | Zero hits | KC-03 |
+| Audit every file-writing cmdlet for an explicit `-Encoding` argument | No reliance on engine defaults | KC-04 |
+| Inspect each `$IsWindows` / `$IsLinux` / `$IsMacOS` reference for a guard | None reachable unguarded by 5.1 | KC-02 |
+| Probe module presence AND dependency (RSAT installed, DC line-of-sight, policy state) | Both layers verified | KC-05 |
+| Search shipped scripts for `Enable-ExperimentalFeature` reliance | None; experimental features treated as absent | KC-07 |
+| Name the remoting transport per hop: WinRM (`-ComputerName`) or SSH (`-HostName`) | Matches fleet reality | KC-08 |
+| Spot-check drifted parameters (e.g. `Test-Connection`) against the target engine's help | Names valid per engine | KC-09 |
+| Review WMI/event-log code for CIM / `Get-WinEvent` modernization | Future-proofed even where 5.1 suffices today | KC-10 |
 
 ```powershell
 # Scanner one-liners for the checklist above (run in any engine)
@@ -210,7 +223,7 @@ Select-String -Path *.ps1 -Pattern 'Get-WmiObject|Invoke-WmiMethod|Set-WmiInstan
 Select-String -Path *.ps1 -Pattern '\[wmiclass\]|\[wmi\]|Get-EventLog|Write-EventLog'
 Select-String -Path *.ps1 -Pattern '\$Is(Windows|Linux|MacOS)'    # inspect each hit for a guard
 Select-String -Path *.ps1 -Pattern '(Out-File|Set-Content|Add-Content|Export-Csv)(?!.*-Encoding)'
-Select-String -Path *.ps1 -Pattern '&&|\?\?|\?\.|Get-ExperimentalFeature'  # syntax leaks needing COMP-06 triage
+Select-String -Path *.ps1 -Pattern '&&|\?\?|\?\.|Get-ExperimentalFeature'  # syntax leaks needing KC-06 triage
 ```
 
 Five minutes of probing buys a script that runs identically on the inbox engine in a locked-down enterprise and on the current LTS in a container — which is precisely the standard the COMP rules exist to enforce.
