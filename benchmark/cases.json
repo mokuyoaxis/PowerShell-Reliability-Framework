@@ -282,7 +282,7 @@
         }
       ],
       "related_rules": [
-        "IDEM-003",
+        "IDEM-005",
         "ERR-002",
         "COMP-007"
       ]
@@ -349,9 +349,9 @@
         }
       ],
       "related_rules": [
-        "SAFE-006",
+        "SEC-008",
         "COMP-013",
-        "IDEM-004"
+        "SAFE-011"
       ]
     },
     {
@@ -566,7 +566,7 @@
         }
       ],
       "related_rules": [
-        "SAFE-003",
+        "SAFE-013",
         "COMP-006",
         "ERR-008"
       ]
@@ -640,8 +640,8 @@
         }
       ],
       "related_rules": [
-        "SAFE-007",
-        "SEC-012",
+        "SAFE-015",
+        "SAFE-014",
         "ERR-004"
       ]
     },
@@ -709,7 +709,7 @@
       ],
       "related_rules": [
         "COMP-016",
-        "SAFE-009",
+        "SAFE-014",
         "ERR-013"
       ]
     },
@@ -770,7 +770,7 @@
         }
       ],
       "related_rules": [
-        "IDEM-005",
+        "IDEM-008",
         "SEC-003",
         "COMP-005"
       ]
@@ -904,8 +904,7 @@
         }
       ],
       "related_rules": [
-        "SEC-008",
-        "SAFE-010",
+        "SAFE-006",
         "ERR-015"
       ]
     },
@@ -978,8 +977,9 @@
       ],
       "related_rules": [
         "ERR-001",
-        "SAFE-005",
-        "COMP-003"
+        "SAFE-003",
+        "COMP-003",
+        "ERR-013"
       ]
     },
     {
@@ -1047,7 +1047,7 @@
       "related_rules": [
         "SEC-001",
         "ERR-012",
-        "SAFE-008"
+        "SEC-016"
       ]
     },
     {
@@ -1168,7 +1168,7 @@
       ],
       "related_rules": [
         "SEC-004",
-        "SAFE-011",
+        "SEC-014",
         "COMP-001"
       ]
     },
@@ -1237,7 +1237,7 @@
       "related_rules": [
         "SEC-007",
         "COMP-019",
-        "SAFE-012"
+        "SEC-025"
       ]
     },
     {
@@ -1303,7 +1303,7 @@
         }
       ],
       "related_rules": [
-        "IDEM-006",
+        "IDEM-009",
         "ERR-014",
         "COMP-008"
       ]
@@ -1372,7 +1372,7 @@
       "related_rules": [
         "IDEM-001",
         "ERR-007",
-        "SAFE-013"
+        "IDEM-014"
       ]
     },
     {
@@ -3580,7 +3580,7 @@
       "related_rules": [
         "SAFE-001",
         "SAFE-002",
-        "IDEM-002",
+        "IDEM-007",
         "ERR-001"
       ]
     },
@@ -3711,7 +3711,7 @@
       ],
       "related_rules": [
         "SAFE-002",
-        "IDEM-003",
+        "SAFE-005",
         "ERR-001",
         "ERR-002"
       ]
@@ -4039,7 +4039,7 @@
       ],
       "related_rules": [
         "SAFE-002",
-        "IDEM-002",
+        "ERR-007",
         "ERR-001"
       ]
     },
@@ -5690,7 +5690,6 @@
       ],
       "related_rules": [
         "ERR-007",
-        "IDEM-005",
         "ERR-015",
         "ERR-019"
       ]
@@ -5755,7 +5754,6 @@
       "related_rules": [
         "COMP-016",
         "SEC-023",
-        "IDEM-005",
         "ERR-019"
       ]
     },
