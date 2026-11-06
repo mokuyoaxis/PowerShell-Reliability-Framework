@@ -1,5 +1,5 @@
 # PRF Example 08 — scheduled-task-register
-# Rules demonstrated: IDEM-009
+# Rules demonstrated: IDEM-009, SEC-010
 # Risk class: medium
 # NOTE: bad/*.ps1 are NEGATIVE training examples. Never execute them.
 

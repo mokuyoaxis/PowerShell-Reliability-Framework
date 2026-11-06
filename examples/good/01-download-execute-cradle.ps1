@@ -1,5 +1,5 @@
 # PRF Example 01 — download-execute-cradle
-# Rules demonstrated: SEC-002, SEC-003
+# Rules demonstrated: SEC-002, SEC-003, SEC-010
 # Risk class: critical
 # NOTE: bad/*.ps1 are NEGATIVE training examples. Never execute them.
 
