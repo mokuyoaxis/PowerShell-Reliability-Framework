@@ -3162,7 +3162,7 @@ rules:
   - heredoc
   - syntax
   detection:
-    pattern: (?m)@['\"][ \t]*[^\s\r\n]
+    pattern: (?m)^(?![ \t]*#).*?@['\"][ \t]*[^\s\r\n]
 - id: HD-003
   category: heredoc
   severity: high
