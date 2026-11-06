@@ -15,7 +15,8 @@ Gates:
   7. routing     - rules/routing-labels.yaml labels every rule exactly once, in
                    corpus order; risk/topics drawn from the frozen vocabularies;
                    depends_on resolves; resident count matches; rules_blob
-                   matches the current rule corpus
+                   matches the current rule corpus (hashed with CRLF folded to
+                   LF, so a Windows checkout yields the same blob id)
 
 Usage: python3 tools/validate.py   (exit 0 = PASS, 1 = FAIL)
 """
