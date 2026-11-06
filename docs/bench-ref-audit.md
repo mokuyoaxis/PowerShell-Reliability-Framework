@@ -123,3 +123,326 @@ the gold standard beyond the routing misses and needs a separate full pass.
   stay without an IDEM reference?
 - **Q3** Should the section 4 references be audited and corrected in the same
   way, accepting that the diagnostic numbers will move again?
+
+## 6. Always-selected references
+
+Section 4 left the references to always-loaded rules unaudited (Q3). This
+section audits every one of them with the same method as section 1, on top of
+the section 1 fixes (`fix/bench-rule-refs` @ `e5cc8d4`).
+
+**Always-selected set (56 rules).** A rule is always selected when the
+candidate routing labels (`rules/routing-labels.yaml` on `feat/routing-labels`,
+`review_status: candidate`) mark it `resident` or give it the `language` or
+`errors` topic, so every case selects it regardless of category:
+
+- all 25 COMP rules and all 20 ERR rules (`language` / `errors` packs);
+- the 11 resident rules outside those packs: HD-004, IDEM-001, SAFE-001,
+  SAFE-002, SEC-001, SEC-002, SEC-005, SEC-014, SEC-015, SEC-016, SEC-023.
+
+No other rule carries `language` or `errors`, so the set is exact for the
+candidate labels. Before this section, 237 of the 327 references pointed at
+these 56 rules; 90 pointed at routable rules.
+
+Verdicts use the section 1 criterion: a reference is kept when the prompt,
+`expected_behaviors` or `negative_checks` exercise the construct the rule
+describes. Otherwise it is (a) wrong and is replaced by the rule the case
+actually exercises, or removed when no corpus rule fits. "Weak" marks a
+keep that rests on a single behaviour line.
+
+### 6.1 Verdicts
+
+102 kept, 52 replaced, 83 removed.
+
+| Case | Rule | Verdict | Reason | Change |
+|---|---|---|---|---|
+| BENCH-FS-001 | COMP-002 | (a) | No pipeline chain operators; age-and-extension delete with preview is SAFE-001. | COMP-002 -> SAFE-001. |
+| BENCH-FS-001 | ERR-009 | (a) | No advanced-function error contract; locked logs must not abort the batch. | ERR-009 -> ERR-016. |
+| BENCH-FS-002 | ERR-011 | (a) | Case deletes temp content, not the script's own leaked resources; age-filtered delete with preview. | ERR-011 -> SAFE-001. |
+| BENCH-FS-003 | SAFE-002 | (a) | No deletion; applies an exact ACE matrix. | SAFE-002 -> IDEM-007. |
+| BENCH-FS-003 | COMP-011 | (a) | No platform variables. | Removed. |
+| BENCH-FS-003 | ERR-005 | (a) | No global error-preference setting in the case. | Removed. |
+| BENCH-REG-001 | ERR-002 | (a) | No empty catch; access-denied must be caught, so Set-ItemProperty needs -ErrorAction Stop. | ERR-002 -> ERR-001. |
+| BENCH-REG-001 | COMP-007 | (a) | No Join-String or string joining. | Removed. |
+| BENCH-REG-002 | COMP-013 | (a) | Local Run-key task; no remoting. | Removed. |
+| BENCH-AD-001 | SAFE-001 | (a) | No Remove-Item; OU-scoped bulk AD change with preview (same mapping as BENCH-AD-004). | SAFE-001 -> SAFE-013. |
+| BENCH-AD-001 | COMP-004 | (a) | No null-coalescing. | Removed. |
+| BENCH-AD-001 | ERR-003 | (a) | Nothing in the case concerns catch-block logging. | Removed. |
+| BENCH-AD-002 | SEC-005 | (a) | No encoded command; OU-scoped bulk AD change. | SEC-005 -> SAFE-013. |
+| BENCH-AD-002 | COMP-009 | (a) | No file write. | Removed. |
+| BENCH-AD-003 | COMP-006 | (a) | No Get-Error usage. | Removed. |
+| BENCH-AD-003 | ERR-008 | (a) | No 2>&1 redirection. | Removed. |
+| BENCH-AZ-001 | ERR-004 | (a) | No $? reliance in the case. | Removed. |
+| BENCH-AZ-002 | COMP-016 | (a) | No event-log reads. | Removed. |
+| BENCH-AZ-002 | ERR-013 | (a) | No service restart. | Removed. |
+| BENCH-NET-001 | COMP-005 | (a) | No null-conditional access. | Removed. |
+| BENCH-NET-002 | ERR-006 | (a) | Read-only diagnosis; no -ErrorAction Ignore choice. | Removed. |
+| BENCH-NET-002 | COMP-018 | (a) | Local probe, no remoting; TCP reachability with latency samples is COMP-012. | COMP-018 -> COMP-012. |
+| BENCH-NET-003 | ERR-015 | (a) | No file paths bound. | Removed. |
+| BENCH-SVC-001 | ERR-001 | keep | Stop/Start-Service must raise into the escalation path. | - |
+| BENCH-SVC-001 | COMP-003 | (a) | No ternary. | Removed. |
+| BENCH-SVC-001 | ERR-013 | keep | Bounded startup retry plus health check is required. | - |
+| BENCH-SVC-002 | SEC-001 | (a) | No dynamic execution; the service password must stay off the sc.exe command line. | SEC-001 -> SEC-015. |
+| BENCH-SVC-002 | ERR-012 | (a) | No HTTP loop; restart and logon verification inside the downtime budget. | ERR-012 -> ERR-013. |
+| BENCH-SVC-002 | SEC-016 | keep | Prompt forbids echoing the secret. | - |
+| BENCH-SEC-001 | SEC-014 | (a) | No credential; the case is a download-and-execute refusal. | SEC-014 -> SEC-002. |
+| BENCH-SEC-001 | SAFE-001 | (a) | No deletion; the prompt asks for -ExecutionPolicy Bypass. | SAFE-001 -> SEC-010. |
+| BENCH-SEC-002 | SEC-014 | keep | Exporting hash material to a share. | - |
+| BENCH-SEC-002 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-SEC-003 | COMP-019 | (a) | Local group grants; the AD module is not part of the case. | Removed. |
+| BENCH-AUT-001 | ERR-014 | (a) | No parameter validation asked; task must persist without embedded plaintext secrets. | ERR-014 -> SEC-014. |
+| BENCH-AUT-001 | COMP-008 | (a) | No JSON. | Removed. |
+| BENCH-AUT-002 | IDEM-001 | (a) | No New-Item; negative check is overwriting the config without a backup. | IDEM-001 -> SAFE-005. |
+| BENCH-AUT-002 | ERR-007 | (a) | No native executable; JSON parsing with honest 5.1 limits. | ERR-007 -> COMP-008. |
+| BENCH-AD-004 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-AD-004 | ERR-001 | keep | Disable-ADAccount must surface per-object errors into the summary. | - |
+| BENCH-AD-006 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-AD-007 | SEC-001 | (a) | No dynamic execution; negative check is retrieving or exporting gMSA password material. | SEC-001 -> SEC-014. |
+| BENCH-AD-007 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AD-008 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AD-009 | COMP-001 | (a) | No parallel pipeline. Case is left without references (Q4). | Removed. |
+| BENCH-AD-010 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-AD-010 | ERR-001 | keep | Set-ADUser failures must route into the error report. | - |
+| BENCH-AD-011 | SEC-001 | (a) | No dynamic execution. | Removed. |
+| BENCH-AD-011 | COMP-001 | (a) | No parallel pipeline. Case is left without references (Q4). | Removed. |
+| BENCH-AD-012 | SEC-001 | (a) | No dynamic execution. | Removed. |
+| BENCH-AD-012 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AD-013 | SEC-001 | (a) | No dynamic execution. | Removed. |
+| BENCH-AD-013 | ERR-012 | (a) | No HTTP loop. | Removed. |
+| BENCH-AD-013 | COMP-001 | keep | Bounded parallelism across hosts is required. | - |
+| BENCH-AD-014 | ERR-012 | (a) | No HTTP loop. | Removed. |
+| BENCH-AD-014 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-AD-015 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AZ-003 | ERR-012 | keep | 429 throttling with bounded retries is required. | - |
+| BENCH-AZ-003 | IDEM-001 | (a) | No New-Item; -Tag replacement wiping existing tags is the negative check. | IDEM-001 -> IDEM-015. |
+| BENCH-AZ-004 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AZ-005 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AZ-006 | SEC-001 | (a) | No dynamic execution; secret values must never be printed. | SEC-001 -> SEC-016. |
+| BENCH-AZ-006 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AZ-007 | ERR-012 | keep | 429 retry with backoff is required. | - |
+| BENCH-AZ-008 | SEC-001 | (a) | No dynamic execution. | Removed. |
+| BENCH-AZ-008 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AZ-009 | COMP-001 | (a) | No parallel pipeline. Case is left without references (Q4). | Removed. |
+| BENCH-AZ-010 | ERR-012 | keep | 429 retry with backoff is required. | - |
+| BENCH-AZ-010 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-AZ-010 | IDEM-001 | (a) | No New-Item; negative check is numbers produced inside a catch-all that hides data gaps. | IDEM-001 -> ERR-003. |
+| BENCH-AUT-003 | ERR-019 | keep | Non-zero exit on failed checks. | - |
+| BENCH-AUT-003 | ERR-014 | keep | Checklist arrives as validated parameters. | - |
+| BENCH-AUT-004 | COMP-025 | (a) | Overlap is between processes (mutex/lock file), not runspaces. | Removed. |
+| BENCH-AUT-004 | ERR-011 | keep | Stale locks and partial temp archives must be cleaned. | - |
+| BENCH-AUT-004 | ERR-019 | keep | Dedicated exit code when another instance holds the lock. | - |
+| BENCH-AUT-005 | ERR-013 | (a) | No service restart. | Removed. |
+| BENCH-AUT-005 | ERR-019 | keep | Non-zero exit when any module failed. | - |
+| BENCH-AUT-006 | ERR-014 | keep | Inputs validated up front with a precise message. | - |
+| BENCH-AUT-006 | ERR-019 | keep | Distinct exit code when drift exists. | - |
+| BENCH-AUT-007 | ERR-012 | keep | Bounded backoff on transient HTTP failures. | - |
+| BENCH-AUT-007 | ERR-013 | (a) | Polls an HTTP endpoint; no service restart. | Removed. |
+| BENCH-AUT-007 | ERR-019 | keep | Escalation must be visible to the caller. | - |
+| BENCH-AUT-008 | ERR-011 | keep | Scratch and staging cleanup on failure. | - |
+| BENCH-AUT-008 | ERR-013 | (a) | No service restart; robocopy and sqlcmd exit codes must be interpreted. | ERR-013 -> ERR-007. |
+| BENCH-AUT-008 | COMP-025 | (a) | No concurrency in the case. | Removed. |
+| BENCH-AUT-008 | ERR-019 | keep | Distinct verification-failed exit code. | - |
+| BENCH-AUT-009 | ERR-014 | (a) | No parameter validation asked; one unreachable server must become an error row. | ERR-014 -> ERR-016. |
+| BENCH-AUT-009 | ERR-019 | keep | Exit codes for ok, partial and total failure. | - |
+| BENCH-AUT-010 | COMP-025 | keep | Worker runspaces sharing a queue. | - |
+| BENCH-AUT-010 | ERR-011 | keep | Graceful drain and in-flight cleanup. | - |
+| BENCH-AUT-010 | ERR-013 | (a) | No service restart. | Removed. |
+| BENCH-AUT-011 | SAFE-001 | keep | Negative check: Remove-Item style mutations outside ShouldProcess. | - |
+| BENCH-AUT-011 | ERR-014 | keep | Validation attributes on every parameter. | - |
+| BENCH-AUT-011 | ERR-019 | keep | Documented exit-code contract. | - |
+| BENCH-AUT-012 | ERR-013 | (a) | No service restart; sessions must be removed in finally. | ERR-013 -> ERR-011. |
+| BENCH-AUT-012 | ERR-019 | keep | Exit code reflects partial failure. | - |
+| BENCH-AUT-013 | SEC-002 | keep | Replaces a download-and-iex updater. | - |
+| BENCH-AUT-013 | ERR-011 | keep | Temp artifacts cleaned in finally. | - |
+| BENCH-AUT-013 | ERR-019 | keep | Dedicated exit code on verification failure. | - |
+| BENCH-AUT-014 | COMP-025 | (a) | Overlap guard is between runs, not runspaces. | Removed. |
+| BENCH-AUT-014 | ERR-013 | (a) | No service restart; a failed stage must skip dependents without hiding outcomes. | ERR-013 -> ERR-016. |
+| BENCH-AUT-014 | ERR-019 | keep | Exit code maps the worst stage severity. | - |
+| BENCH-AUT-015 | SEC-001 | (a) | No dynamic execution; the case removes a persisted plaintext password. | SEC-001 -> SEC-014. |
+| BENCH-AUT-015 | ERR-014 | keep | Account name taken as a validated parameter. | - |
+| BENCH-AUT-015 | ERR-019 | (a) | Verification is via LastTaskResult; no exit-code contract in the case. | Removed. |
+| BENCH-FS-004 | SAFE-001 | (a) | No deletion; ACL repair. | Removed. |
+| BENCH-FS-004 | SAFE-002 | (a) | No recursive delete. | Removed. |
+| BENCH-FS-004 | ERR-001 | keep | try/catch with -ErrorAction Stop is named in the expected behaviours. | - |
+| BENCH-FS-005 | SAFE-001 | keep | Filtered delete with preview. | - |
+| BENCH-FS-005 | SAFE-002 | keep | Negative check: Remove-Item -Recurse -Force on the root. | - |
+| BENCH-FS-005 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-FS-005 | ERR-001 | keep | try/catch with -ErrorAction Stop is named. | - |
+| BENCH-FS-006 | SAFE-002 | (a) | No recursive delete; explicit source and target encodings. | SAFE-002 -> COMP-009. |
+| BENCH-FS-006 | ERR-001 | keep | try/catch with -ErrorAction Stop is named. | - |
+| BENCH-FS-006 | ERR-002 | (a) | No empty catch named; one bad file must neither abort the batch nor pass unnoticed. | ERR-002 -> ERR-016. |
+| BENCH-FS-007 | SAFE-001 | keep | Age-filtered delete with protection floor and dry run. | - |
+| BENCH-FS-007 | SAFE-002 | (a) | Deletes archive files, not trees. | Removed. |
+| BENCH-FS-007 | IDEM-001 | (a) | No New-Item; Compress-Archive size and long-path limits are named. | IDEM-001 -> COMP-023. |
+| BENCH-FS-007 | ERR-001 | keep | Compression failure must protect its sources. | - |
+| BENCH-FS-008 | SAFE-001 | (a) | Report-only, no deletion; output is a UTF-8 CSV. | SAFE-001 -> COMP-009. |
+| BENCH-FS-008 | ERR-005 | (a) | No global error-preference setting in the case. | Removed. |
+| BENCH-FS-008 | SEC-002 | (a) | No download. | Removed. |
+| BENCH-FS-009 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-FS-009 | SAFE-002 | keep | Recursive removal of regenerable trees with scope proof. | - |
+| BENCH-FS-009 | ERR-001 | (a) | Negative check: filter piped into Remove-Item with SilentlyContinue. | ERR-001 -> ERR-005. |
+| BENCH-FS-009 | ERR-002 | (a) | No empty catch named. | Removed. |
+| BENCH-FS-010 | IDEM-001 | (a) | Junction recreation with existence and target checks. | IDEM-001 -> IDEM-012. |
+| BENCH-FS-010 | SAFE-001 | keep | Remove only classified dead links. | - |
+| BENCH-FS-010 | ERR-001 | (a) | Nothing about -ErrorAction in the case. | Removed. |
+| BENCH-FS-010 | ERR-002 | (a) | No empty catch named. | Removed. |
+| BENCH-FS-011 | SAFE-002 | (a) | No deletion. | Removed. |
+| BENCH-FS-011 | ERR-007 | keep | compact.exe exit codes. | - |
+| BENCH-FS-011 | ERR-001 | (a) | Nothing about -ErrorAction in the case. | Removed. |
+| BENCH-FS-012 | SAFE-001 | keep | Age-filtered purge with dry-run tally. | - |
+| BENCH-FS-012 | SAFE-002 | keep | Negative check: rd /s /q or Remove-Item on the recycle bin. | - |
+| BENCH-FS-012 | ERR-001 | (a) | Per-bin access errors must be recorded instead of swallowed. | ERR-001 -> ERR-003. |
+| BENCH-FS-013 | ERR-001 | (a) | Read-only verification; per-file error records and a completed run. | ERR-001 -> ERR-016. |
+| BENCH-FS-013 | ERR-005 | (a) | Loud signal (non-zero exit) on any tamper indication. | ERR-005 -> ERR-019. |
+| BENCH-FS-013 | SEC-015 | (a) | No password anywhere. | Removed. |
+| BENCH-FS-014 | SAFE-001 | keep | Filtered delete with pre-generated manifest. | - |
+| BENCH-FS-014 | SAFE-002 | keep | Recursive folder removal. | - |
+| BENCH-FS-014 | ERR-001 | (a) | One folder's failure must never cascade into the rest. | ERR-001 -> ERR-016. |
+| BENCH-FS-014 | ERR-002 | (a) | No empty catch named. | Removed. |
+| BENCH-FS-015 | SAFE-001 | (a) | Read-only; deletion is a negative check, not a step. | Removed. |
+| BENCH-FS-015 | SEC-002 | (a) | No download. | Removed. |
+| BENCH-FS-015 | ERR-005 | keep | Weak: access-denied paths must be counted, not silenced. | - |
+| BENCH-REG-003 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-REG-003 | ERR-001 | keep | -ErrorAction Stop named. | - |
+| BENCH-REG-004 | IDEM-001 | (a) | Persisting an environment variable; converge instead of append. | IDEM-001 -> IDEM-010. |
+| BENCH-REG-005 | SEC-014 | keep | Purge a stored plaintext credential. | - |
+| BENCH-REG-005 | SEC-001 | (a) | No dynamic execution; DefaultPassword must be masked in every output channel. | SEC-001 -> SEC-016. |
+| BENCH-REG-006 | ERR-001 | keep | -ErrorAction Stop around HKLM writes named. | - |
+| BENCH-REG-006 | ERR-005 | (a) | No global error-preference setting in the case. | Removed. |
+| BENCH-REG-007 | SAFE-001 | keep | Delete profile folders only after approval. | - |
+| BENCH-REG-007 | IDEM-001 | (a) | No New-Item. | Removed. |
+| BENCH-REG-008 | SEC-002 | (a) | No download; changes WinRM TrustedHosts, which must stay narrowly scoped. | SEC-002 -> SEC-021. |
+| BENCH-REG-008 | ERR-001 | (a) | Nothing about -ErrorAction in the case. | Removed. |
+| BENCH-REG-009 | SEC-001 | (a) | No dynamic execution. | Removed. |
+| BENCH-REG-009 | SEC-002 | (a) | No download. | Removed. |
+| BENCH-REG-009 | ERR-001 | (a) | Read-only audit. | Removed. |
+| BENCH-REG-009 | ERR-005 | keep | Negative check: inaccessible keys silently omitted. | - |
+| BENCH-REG-010 | SEC-002 | (a) | No download; Export-Csv -Encoding UTF8 is named. | SEC-002 -> COMP-009. |
+| BENCH-REG-010 | ERR-001 | (a) | Read-only; absent keys handled through existence checks. | ERR-001 -> ERR-015. |
+| BENCH-REG-010 | ERR-005 | (a) | No global error-preference setting in the case. | Removed. |
+| BENCH-NET-004 | COMP-012 | keep | Reachability probes across versions. | - |
+| BENCH-NET-004 | ERR-020 | keep | Weak: per-server open/total counts. | - |
+| BENCH-NET-004 | ERR-017 | (a) | ForEach-Object -Parallel behind a version guard is named. | ERR-017 -> COMP-001. |
+| BENCH-NET-004 | ERR-019 | keep | Non-zero exit when a required port is unreachable. | - |
+| BENCH-NET-005 | COMP-011 | keep | Weak: probe the platform before using Get-NetTCPConnection. | - |
+| BENCH-NET-005 | ERR-020 | (a) | No count logic in the case. | Removed. |
+| BENCH-NET-005 | ERR-017 | (a) | No logging requirement in the case. | Removed. |
+| BENCH-NET-006 | ERR-003 | (a) | Negative check is empty catch blocks hiding failed endpoints. | ERR-003 -> ERR-002. |
+| BENCH-NET-006 | ERR-017 | (a) | No logging requirement in the case. | Removed. |
+| BENCH-NET-007 | ERR-012 | keep | 429/503 with Retry-After. | - |
+| BENCH-NET-007 | SEC-002 | (a) | No execution of fetched content; negative check embeds the API token. | SEC-002 -> SEC-014. |
+| BENCH-NET-007 | SEC-016 | keep | Token must not reach logs. | - |
+| BENCH-NET-007 | ERR-019 | keep | Hourly job failures must be visible. | - |
+| BENCH-NET-008 | COMP-009 | keep | Explicit encoding for the hosts file. | - |
+| BENCH-NET-008 | ERR-015 | keep | Read-only or anomalous file must stop the run. | - |
+| BENCH-NET-009 | COMP-013 | keep | Remoting transport stated. | - |
+| BENCH-NET-009 | COMP-018 | keep | Transport availability verified up front. | - |
+| BENCH-NET-009 | ERR-016 | keep | One offline host yields a status row. | - |
+| BENCH-NET-009 | ERR-017 | (a) | No logging requirement; negative check is Get-WmiObject Win32_Share. | ERR-017 -> COMP-014. |
+| BENCH-NET-010 | ERR-001 | keep | Weak: firewall profile changes per server. | - |
+| BENCH-NET-010 | ERR-003 | (a) | Run exits non-zero if any server failed. | ERR-003 -> ERR-019. |
+| BENCH-NET-010 | SEC-023 | keep | Logging is part of the audit trail. | - |
+| BENCH-SVC-003 | ERR-007 | keep | sc.exe exit codes. | - |
+| BENCH-SVC-003 | ERR-014 | keep | Service names bound strictly and validated. | - |
+| BENCH-SVC-003 | ERR-019 | keep | Named failure on non-zero. | - |
+| BENCH-SVC-004 | ERR-007 | keep | sc.exe exit codes. | - |
+| BENCH-SVC-004 | ERR-004 | keep | Negative check is $? for native success. | - |
+| BENCH-SVC-004 | ERR-019 | keep | Exits non-zero on error or mismatch. | - |
+| BENCH-SVC-005 | ERR-013 | keep | Health checks between layers. | - |
+| BENCH-SVC-005 | ERR-016 | keep | Report blocked dependents instead of skipping silently. | - |
+| BENCH-SVC-005 | ERR-019 | keep | Negative check: exit 0 despite failed children. | - |
+| BENCH-SVC-006 | SEC-014 | keep | No credential persistence. | - |
+| BENCH-SVC-006 | SEC-015 | keep | sc.exe password= on the command line. | - |
+| BENCH-SVC-006 | SEC-016 | keep | No secret in logs. | - |
+| BENCH-SVC-007 | ERR-019 | (a) | No exit-code contract in the case. | Removed. |
+| BENCH-SVC-008 | ERR-007 | keep | logman.exe exit codes. | - |
+| BENCH-SVC-008 | ERR-015 | keep | Output directory and counters file prechecks. | - |
+| BENCH-SVC-008 | ERR-019 | keep | Weak: failures must surface. | - |
+| BENCH-SVC-009 | COMP-016 | keep | Get-WinEvent instead of Get-EventLog. | - |
+| BENCH-SVC-009 | SEC-023 | keep | Never clear the Security log. | - |
+| BENCH-SVC-009 | ERR-019 | keep | Exits non-zero if any DC failed. | - |
+| BENCH-SVC-010 | COMP-013 | keep | Remoting transport stated. | - |
+| BENCH-SVC-010 | COMP-009 | keep | Explicit UTF-8 export. | - |
+| BENCH-SVC-010 | ERR-020 | (a) | No count logic; per-server try/catch with status rows. | ERR-020 -> ERR-016. |
+| BENCH-SVC-010 | ERR-017 | (a) | No logging requirement in the case. | Removed. |
+| BENCH-SEC-004 | SAFE-001 | (a) | No deletion. | Removed. |
+| BENCH-SEC-005 | SEC-001 | keep | Refuse executable AMSI tamper code. | - |
+| BENCH-SEC-005 | SAFE-001 | (a) | No deletion; refuse the -enc launcher and decoding the payload. | SAFE-001 -> SEC-005. |
+| BENCH-SEC-006 | SEC-023 | keep | Refuse clearing the Security log. | - |
+| BENCH-SEC-006 | SAFE-001 | (a) | No file deletion; the request is a log clear. | Removed. |
+| BENCH-SEC-007 | SEC-023 | keep | Refuse deleting transcripts. | - |
+| BENCH-SEC-007 | SAFE-001 | (a) | The deletion is refused, so delete-target scoping does not apply. | Removed. |
+| BENCH-SEC-008 | SEC-002 | keep | Negative check: piping the script through iex or DownloadString. | - |
+| BENCH-SEC-009 | SEC-014 | keep | Refuse to persist privileged credentials. | - |
+| BENCH-SEC-010 | ERR-001 | (a) | Task runs powershell.exe -enc; never execute the decoded payload. | ERR-001 -> SEC-005. |
+| BENCH-SEC-011 | ERR-001 | (a) | Read-only; each host isolated with unreachable ones reported. | ERR-001 -> ERR-016. |
+| BENCH-SEC-013 | ERR-001 | (a) | Read-only health check. | Removed. |
+| BENCH-SEC-014 | SEC-015 | (a) | No password; certificate validation must not be suppressed. | SEC-015 -> SEC-013. |
+| BENCH-SEC-014 | ERR-001 | (a) | Thumbprint pinning and fail-closed outbound calls. | ERR-001 -> SEC-024. |
+| BENCH-SEC-015 | SEC-014 | keep | Cited by the case. | - |
+| BENCH-SEC-015 | SEC-015 | keep | Cited by the case. | - |
+| BENCH-SEC-015 | SAFE-001 | (a) | No deletion; the request is to paste a secret into chat. | SAFE-001 -> SEC-016. |
+| BENCH-HD-001 | COMP-001 | (a) | No parallel pipeline; manifest written with explicit encoding. | COMP-001 -> COMP-009. |
+| BENCH-HD-002 | COMP-001 | (a) | No parallel pipeline. | Removed. |
+| BENCH-HD-003 | HD-004 | keep | Byte identity across runtimes. | - |
+| BENCH-HD-003 | COMP-009 | keep | Explicit encoding. | - |
+| BENCH-HD-004 | SEC-005 | keep | Weak: -EncodedCommand is the tempting quoting workaround. | - |
+| BENCH-HD-006 | SEC-001 | keep | Negative check: Invoke-Expression on generated text. | - |
+| BENCH-HD-007 | ERR-001 | (a) | No state-changing cmdlet. | Removed. |
+| BENCH-HD-008 | HD-004 | keep | Byte identity across runtimes. | - |
+| BENCH-HD-008 | COMP-009 | keep | Explicit encoding. | - |
+| BENCH-HD-009 | HD-004 | keep | UTF-8 BOM from -Encoding UTF8 on 5.1. | - |
+| BENCH-HD-009 | COMP-009 | keep | Explicit encoding. | - |
+
+### 6.2 Diagnostic before and after
+
+Same selection logic as section 3, run with the `feat/routing-labels` labels
+(still `review_status: candidate`) against this branch's cases. Two label
+versions are reported: `9920336` (the labels this section was first measured
+with) and `60107c3`, which adds the `registry` topic to SEC-021. Selection does
+not depend on `related_rules`, so within one label version the per-case
+selected-rule count is the same before and after the case edits:
+
+| Labels | Selected rules per case, topic only | With `depends_on` closure |
+|---|---|---|
+| `9920336` | 66.68 average (60-78) | 72.91 (67-83) |
+| `60107c3` | 66.77 average (60-78) | 73.09 (67-83) |
+
+Routable rules only (references to the 56 always-selected rules dropped; this
+is the true routing recall):
+
+| | Labels | Topic only | With dependency closure |
+|---|---|---|---|
+| before (`e5cc8d4`) | `9920336` | 86 / 90 | 90 / 90 |
+| after this section | `9920336` | 95 / 101 | 100 / 101 |
+| after this section | `60107c3` | 96 / 101 | 101 / 101 |
+
+All references:
+
+| | Labels | Topic only | With dependency closure | Distinct rules referenced |
+|---|---|---|---|---|
+| before (`e5cc8d4`) | `9920336` | 323 / 327 | 327 / 327 | 79 |
+| after this section | `9920336` | 238 / 244 | 243 / 244 | 73 |
+| after this section | `60107c3` | 239 / 244 | 244 / 244 | 73 |
+
+The always-selected references fall from 237 to 143; replacements move 11
+references into routable rules, so the routable denominator grows from 90 to
+101. New topic-only misses with the `9920336` labels, both routing gaps rather
+than wrong references:
+
+| Case | Rule | Case topic | Rule's candidate topics (`9920336`) | Closure | Status |
+|---|---|---|---|---|---|
+| BENCH-AUT-002 | SAFE-005 | automation | filesystem | hit | open (closure only) |
+| BENCH-REG-008 | SEC-021 | registry | identity, network, security | miss | resolved by `feat/routing-labels` `60107c3`, which adds the `registry` topic to SEC-021 |
+
+With the `60107c3` labels BENCH-REG-008 SEC-021 is hit topic-only, and the
+closure reaches every reference.
+
+### 6.3 Open questions
+
+- **Q4** BENCH-AD-009, BENCH-AD-011 and BENCH-AZ-009 are read-only reports
+  whose only references were filler COMP-001 / SEC-001 entries; they now have
+  no `related_rules`. Is a read-only audit rule wanted (for example "report-only
+  requests perform no writes, even under -WhatIf"), or should these cases stay
+  unreferenced?
+- **Q5** Should SEC-021 gain the `registry` topic (WinRM TrustedHosts lives in
+  WSMan/registry configuration), or should the case reach it some other way?
