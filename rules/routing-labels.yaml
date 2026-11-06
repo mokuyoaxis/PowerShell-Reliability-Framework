@@ -1,0 +1,564 @@
+# PRF routing labels - sidecar to rules/reliability-rules.yaml.
+# One entry per rule id, same order as the corpus. Labels only ever ADD material to
+# a routed selection; a missing or unreviewed label never excludes a rule.
+#   risk        R read-only, W write/update, D destructive, N network/outbound,
+#               C credential/identity (multi-valued, never collapsed to one class)
+#   topics      controlled vocabulary, multi-valued
+#   depends_on  rules loaded whenever this rule is selected (closure is transitive)
+#   resident    true for the always-loaded hard rules
+# rules_blob is the git blob id of rules/reliability-rules.yaml these labels were
+# reviewed against; tools/validate.py fails when the corpus changes underneath.
+schema_version: 0.1.0
+name: prf-routing-labels
+rules_blob: d00c978cd694ca5a29258c006a1cc8e43c62171c
+review_status: candidate
+risk_vocabulary: [R, W, D, N, C]
+topic_vocabulary: [language, errors, filesystem, registry, identity, cloud, network, service, automation, security, transport]
+rule_count: 109
+resident_count: 16
+rules:
+- id: COMP-001
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: [COMP-025]
+  resident: false
+- id: COMP-002
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-003
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-004
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-005
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-006
+  risk: [R, W, D, N, C]
+  topics: [language, errors]
+  depends_on: []
+  resident: false
+- id: COMP-007
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-008
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-009
+  risk: [R, W, D, N, C]
+  topics: [language, filesystem]
+  depends_on: []
+  resident: false
+- id: COMP-010
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-011
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: [COMP-021]
+  resident: false
+- id: COMP-012
+  risk: [R, W, D, N, C]
+  topics: [language, network]
+  depends_on: []
+  resident: false
+- id: COMP-013
+  risk: [R, W, D, N, C]
+  topics: [language, network, transport]
+  depends_on: [COMP-018]
+  resident: false
+- id: COMP-014
+  risk: [R, W, D, N, C]
+  topics: [language, automation]
+  depends_on: [COMP-015]
+  resident: false
+- id: COMP-015
+  risk: [R, W, D, N, C]
+  topics: [language, automation]
+  depends_on: [COMP-014]
+  resident: false
+- id: COMP-016
+  risk: [R, W, D, N, C]
+  topics: [language, automation, security]
+  depends_on: []
+  resident: false
+- id: COMP-017
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: true
+- id: COMP-018
+  risk: [R, W, D, N, C]
+  topics: [language, network, transport]
+  depends_on: [COMP-013]
+  resident: false
+- id: COMP-019
+  risk: [R, W, D, N, C]
+  topics: [language, identity]
+  depends_on: []
+  resident: false
+- id: COMP-020
+  risk: [R, W, D, N, C]
+  topics: [language, identity, cloud]
+  depends_on: []
+  resident: false
+- id: COMP-021
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: [COMP-011]
+  resident: false
+- id: COMP-022
+  risk: [R, W, D, N, C]
+  topics: [language, automation]
+  depends_on: []
+  resident: false
+- id: COMP-023
+  risk: [R, W, D, N, C]
+  topics: [language, filesystem]
+  depends_on: []
+  resident: false
+- id: COMP-024
+  risk: [R, W, D, N, C]
+  topics: [language]
+  depends_on: []
+  resident: false
+- id: COMP-025
+  risk: [R, W, D, N, C]
+  topics: [language, automation]
+  depends_on: [COMP-001]
+  resident: false
+- id: ERR-001
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: true
+- id: ERR-002
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: true
+- id: ERR-003
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: [ERR-017]
+  resident: false
+- id: ERR-004
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-005
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-006
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-007
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: true
+- id: ERR-008
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-009
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-010
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-011
+  risk: [R, W, D, N, C]
+  topics: [errors, automation]
+  depends_on: []
+  resident: false
+- id: ERR-012
+  risk: [R, W, D, N, C]
+  topics: [errors, network]
+  depends_on: []
+  resident: false
+- id: ERR-013
+  risk: [R, W, D, N, C]
+  topics: [errors, service]
+  depends_on: [SAFE-003]
+  resident: false
+- id: ERR-014
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-015
+  risk: [R, W, D, N, C]
+  topics: [errors, filesystem]
+  depends_on: []
+  resident: false
+- id: ERR-016
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-017
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: ERR-018
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: [ERR-017]
+  resident: false
+- id: ERR-019
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: true
+- id: ERR-020
+  risk: [R, W, D, N, C]
+  topics: [errors]
+  depends_on: []
+  resident: false
+- id: IDEM-001
+  risk: [W]
+  topics: [filesystem]
+  depends_on: []
+  resident: true
+- id: IDEM-002
+  risk: [W, C]
+  topics: [identity, service]
+  depends_on: []
+  resident: false
+- id: IDEM-003
+  risk: [W, N]
+  topics: [network, automation]
+  depends_on: []
+  resident: false
+- id: IDEM-004
+  risk: [W, C]
+  topics: [identity]
+  depends_on: []
+  resident: false
+- id: IDEM-005
+  risk: [W]
+  topics: [registry, service]
+  depends_on: [SAFE-011]
+  resident: false
+- id: IDEM-006
+  risk: [W]
+  topics: [filesystem, network]
+  depends_on: [SAFE-004, SAFE-005]
+  resident: false
+- id: IDEM-007
+  risk: [W, C]
+  topics: [filesystem, identity, security]
+  depends_on: []
+  resident: false
+- id: IDEM-008
+  risk: [W, N]
+  topics: [network, security]
+  depends_on: []
+  resident: false
+- id: IDEM-009
+  risk: [W]
+  topics: [service, automation]
+  depends_on: [SEC-007]
+  resident: false
+- id: IDEM-010
+  risk: [W]
+  topics: [registry, automation]
+  depends_on: []
+  resident: false
+- id: IDEM-011
+  risk: [W, N]
+  topics: [network]
+  depends_on: []
+  resident: false
+- id: IDEM-012
+  risk: [W]
+  topics: [filesystem]
+  depends_on: []
+  resident: false
+- id: IDEM-013
+  risk: [W, C]
+  topics: [identity, security]
+  depends_on: []
+  resident: false
+- id: IDEM-014
+  risk: [W]
+  topics: [filesystem, automation]
+  depends_on: [COMP-008, SAFE-005]
+  resident: false
+- id: IDEM-015
+  risk: [W]
+  topics: [cloud]
+  depends_on: []
+  resident: false
+- id: SAFE-001
+  risk: [D]
+  topics: [filesystem]
+  depends_on: []
+  resident: true
+- id: SAFE-002
+  risk: [D]
+  topics: [filesystem]
+  depends_on: [SAFE-001]
+  resident: true
+- id: SAFE-003
+  risk: [D]
+  topics: [service]
+  depends_on: [ERR-013]
+  resident: false
+- id: SAFE-004
+  risk: [W, D]
+  topics: [filesystem]
+  depends_on: []
+  resident: false
+- id: SAFE-005
+  risk: [W, D]
+  topics: [filesystem]
+  depends_on: []
+  resident: false
+- id: SAFE-006
+  risk: [D, N]
+  topics: [network, service]
+  depends_on: []
+  resident: false
+- id: SAFE-007
+  risk: [D, N]
+  topics: [network]
+  depends_on: []
+  resident: false
+- id: SAFE-008
+  risk: [D]
+  topics: [filesystem]
+  depends_on: []
+  resident: false
+- id: SAFE-009
+  risk: [W, D]
+  topics: [automation, security]
+  depends_on: [SEC-010]
+  resident: false
+- id: SAFE-010
+  risk: [D, C]
+  topics: [identity]
+  depends_on: []
+  resident: false
+- id: SAFE-011
+  risk: [W, D]
+  topics: [registry, service]
+  depends_on: [IDEM-005]
+  resident: false
+- id: SAFE-012
+  risk: [D]
+  topics: [automation]
+  depends_on: []
+  resident: false
+- id: SAFE-013
+  risk: [D, C]
+  topics: [identity]
+  depends_on: [COMP-019]
+  resident: false
+- id: SAFE-014
+  risk: [D, N]
+  topics: [cloud]
+  depends_on: [COMP-020]
+  resident: false
+- id: SAFE-015
+  risk: [D, N]
+  topics: [cloud]
+  depends_on: [SAFE-014, COMP-020]
+  resident: false
+- id: SEC-001
+  risk: [R, W, D, N, C]
+  topics: [security]
+  depends_on: []
+  resident: true
+- id: SEC-002
+  risk: [W, N]
+  topics: [network, security]
+  depends_on: [SEC-003, SEC-004]
+  resident: true
+- id: SEC-003
+  risk: [W, N]
+  topics: [network, security]
+  depends_on: [SEC-002]
+  resident: false
+- id: SEC-004
+  risk: [W, N]
+  topics: [network, security]
+  depends_on: [SEC-002, SEC-020]
+  resident: false
+- id: SEC-005
+  risk: [R, W, D, N, C]
+  topics: [security]
+  depends_on: []
+  resident: true
+- id: SEC-006
+  risk: [W, N]
+  topics: [network, automation, security]
+  depends_on: []
+  resident: false
+- id: SEC-007
+  risk: [W, N]
+  topics: [automation, security]
+  depends_on: [IDEM-009]
+  resident: false
+- id: SEC-008
+  risk: [W, D]
+  topics: [registry, service, security]
+  depends_on: [SEC-007, IDEM-009]
+  resident: false
+- id: SEC-009
+  risk: [W, D]
+  topics: [security]
+  depends_on: []
+  resident: false
+- id: SEC-010
+  risk: [W, D]
+  topics: [automation, security]
+  depends_on: [SAFE-009]
+  resident: false
+- id: SEC-011
+  risk: [W, N]
+  topics: [automation, security]
+  depends_on: [SEC-004, SEC-020]
+  resident: false
+- id: SEC-012
+  risk: [N]
+  topics: [network, security]
+  depends_on: [SEC-024]
+  resident: false
+- id: SEC-013
+  risk: [N]
+  topics: [network, security]
+  depends_on: [SEC-024]
+  resident: false
+- id: SEC-014
+  risk: [W, C]
+  topics: [identity, security]
+  depends_on: [SEC-016]
+  resident: true
+- id: SEC-015
+  risk: [C]
+  topics: [identity, security]
+  depends_on: [SEC-016]
+  resident: true
+- id: SEC-016
+  risk: [R, C]
+  topics: [identity, security]
+  depends_on: [SEC-014]
+  resident: true
+- id: SEC-017
+  risk: [W, C]
+  topics: [identity, security]
+  depends_on: [SEC-014]
+  resident: false
+- id: SEC-018
+  risk: [W, C]
+  topics: [filesystem, identity, security]
+  depends_on: [SEC-014]
+  resident: false
+- id: SEC-019
+  risk: [W]
+  topics: [automation, security]
+  depends_on: []
+  resident: false
+- id: SEC-020
+  risk: [W, N]
+  topics: [network, security]
+  depends_on: [SEC-004]
+  resident: false
+- id: SEC-021
+  risk: [W, N, C]
+  topics: [identity, network, security]
+  depends_on: [SEC-025]
+  resident: false
+- id: SEC-022
+  risk: [R, W, D, N, C]
+  topics: [identity, security]
+  depends_on: []
+  resident: false
+- id: SEC-023
+  risk: [R, W, D, N, C]
+  topics: [automation, security]
+  depends_on: []
+  resident: true
+- id: SEC-024
+  risk: [N]
+  topics: [network, security]
+  depends_on: [SEC-012, SEC-013]
+  resident: false
+- id: SEC-025
+  risk: [W, C]
+  topics: [identity, cloud, service, security]
+  depends_on: []
+  resident: false
+- id: HD-001
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-002
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-003
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-004
+  risk: [R, W, D, N, C]
+  topics: [filesystem, transport]
+  depends_on: [COMP-009, HD-009, SAFE-004, SAFE-005]
+  resident: true
+- id: HD-005
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-006
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-007
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-008
+  risk: [R, W, D, N, C]
+  topics: [transport]
+  depends_on: []
+  resident: false
+- id: HD-009
+  risk: [R, W, D, N, C]
+  topics: [filesystem, transport]
+  depends_on: [COMP-009, HD-004]
+  resident: false
