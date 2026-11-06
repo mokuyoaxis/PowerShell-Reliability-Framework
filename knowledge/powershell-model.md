@@ -81,7 +81,7 @@ Details generators miss:
 
 - Pointing streams 1 and 2 at the same file with two separate operators (`1> f 2> f`) collides on the file handle; merge first (`2>&1`), then redirect.
 - Under 5.1, `2>&1` around a native executable wraps stderr lines as `ErrorRecord` objects with encoding artifacts; 7.x delivers plain strings. Any parser of merged output must accept both shapes.
-- `Write-Host` stopped being console-only in 5.0: it rides stream 6, so transcripts and `6>` captures record it. Never route secrets through any of these writers (SEC-).
+- `Write-Host` stopped being console-only in 5.0: it rides stream 6, so transcripts and `6>` captures record it. Never route secrets through any of these writers (SEC-016).
 - `*>` sweeps verbose and debug chatter into the log too; oversized noisy logs are a review smell, and debug output can leak internal detail.
 
 ## 4. Error semantics

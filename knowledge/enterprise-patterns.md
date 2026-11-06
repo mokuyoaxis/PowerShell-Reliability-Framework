@@ -27,7 +27,7 @@ function Set-ContosoServiceStartup {
     [CmdletBinding(SupportsShouldProcess, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [ValidatePattern('^[A-Za-z][A-Za-z0-9_.-]{0,63}$')]      # boundary validation (SAFE-001)
+        [ValidatePattern('^[A-Za-z][A-Za-z0-9_.-]{0,63}$')]      # boundary validation (ERR-014)
         [string]$Name,
         [Parameter(Mandatory, Position = 1)]
         [ValidateSet('Automatic', 'Manual', 'Disabled')]
@@ -42,7 +42,7 @@ function Set-ContosoServiceStartup {
         }
         if ($PSCmdlet.ShouldProcess("service '$($service.Name)'", "set StartupType '$StartupType'")) {
             Set-Service -InputObject $service -StartupType $StartupType
-            Add-Content "$env:ProgramData\Contoso\audit.log" `          # SEC-022: attribution
+            Add-Content "$env:ProgramData\Contoso\audit.log" `          # SEC-023: attribution
                 ('{0};{1};{2};startup={3}' -f (Get-Date -Format o), $env:USERNAME,
                         $service.Name, $StartupType)
         }
@@ -99,7 +99,7 @@ policy; every failure leaves context a responder needs.
 
 | Signal | Semantics | Emit when |
 |---|---|---|
-| `Write-Error` | Non-terminating; record reaches the error stream and `$Error`; caller continues | Per-item pipeline failures; caller owns retry/skip policy (`ERR-002`) |
+| `Write-Error` | Non-terminating; record reaches the error stream and `$Error`; caller continues | Per-item pipeline failures; caller owns retry/skip policy (`ERR-009`) |
 | `throw` | Terminating; unwinds to the nearest caller `catch` | Preconditions violated such that continuing is meaningless |
 
 Enrich records before re-emitting them — a bare `throw $_` discards identity:
@@ -125,7 +125,7 @@ greppable, and reserves `finally` for resource release only.
 
 Treat `Start-Transcript` as belt-and-suspenders, not a logging strategy: transcripts capture
 host-visible output including anything echoed by accident, so leaked secrets persist in
-plaintext (SEC-011); concurrent transcripts on one path collide; inside remoting the
+plaintext (SEC-016); concurrent transcripts on one path collide; inside remoting the
 transcript lands on the *target* machine; the format is prose, not queryable data. Primary
 logging should be structured JSONL with an EventLog mirror for Event Viewer users:
 
@@ -144,7 +144,7 @@ function Write-PrfLog {
     $logDir = Join-Path $env:ProgramData 'PRF\logs'
     New-Item -ItemType Directory -Path $logDir -Force | Out-Null   # no-op when present
     Add-Content -Path (Join-Path $logDir 'prf.jsonl') -Value $entry -Encoding UTF8
-    # COMP-004: Write-EventLog exists only in Windows PowerShell; PS 7 uses the .NET API
+    # COMP-016: Write-EventLog exists only in Windows PowerShell; PS 7 uses the .NET API
     if (Get-Command Write-EventLog -ErrorAction SilentlyContinue) {
         $type = @{ Error = 'Error'; Warning = 'Warning' }[$Level]; if (-not $type) { $type = 'Information' }
         Write-EventLog -LogName Application -Source $Source -EventId 1000 `
@@ -172,19 +172,19 @@ Etiquette: inside inline literals reach back explicitly with `$using:` — an un
 variable resolves remotely and returns empty, a classic silent failure. `-ComputerName`
 accepts lists and throttles internally (~32 concurrent), so never hand-roll parallel machine
 loops. Persistent sessions (`New-PSSession`) amortize connection cost across many calls but
-must be removed in `finally`: leaked sessions exhaust WSMan capacity on busy hosts (SAFE-002).
+must be removed in `finally`: leaked sessions exhaust WSMan capacity on busy hosts (ERR-011).
 CredSSP is a last resort only — it delegates credentials wholesale to the intermediate host
 for the double hop; prefer resource-based constrained delegation, or stage the payload
-locally and run it under a scheduled task as SYSTEM (SEC-006 governs that registration).
+locally and run it under a scheduled task as SYSTEM (SEC-007 governs that registration).
 ## 6. Register-ScheduledTask: idempotent registration
 
-Same inputs must produce the same task state on every run (`IDEM-001`); drift is reconciled,
+Same inputs must produce the same task state on every run (`IDEM-009`); drift is reconciled,
 never duplicated:
 
 ```powershell
-$scriptPath = 'C:\Program Files\Contoso\Maintenance.ps1'     # signed artifact (SEC-020)
+$scriptPath = 'C:\Program Files\Contoso\Maintenance.ps1'     # signed artifact (SEC-007)
 $exe        = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-# COMP-002: pin the executable explicitly — pwsh.exe does not exist on 5.1-only hosts
+# KC-01: pin the executable explicitly — pwsh.exe does not exist on 5.1-only hosts
 $action     = New-ScheduledTaskAction -Execute $exe `
                 -Argument ('-NoProfile -NonInteractive -File "{0}"' -f $scriptPath)
 $trigger    = New-ScheduledTaskTrigger -Daily -At '02:30'
@@ -200,7 +200,7 @@ else {
 }
 ```
 
-This is a persistence change, so SEC-006 applies end-to-end: signed target, managed path,
+This is a persistence change, so SEC-007 applies end-to-end: signed target, managed path,
 named owner, recorded approval. `Get-ScheduledTask` emits a non-terminating error when absent,
 silenced deliberately above instead of wrapping everything in `try`.
 ## 7. Service lifecycle etiquette
@@ -222,7 +222,7 @@ output; on timeout, fail loudly with an enriched record (`ERR-003`).
 ## 8. SecretManagement consumption pattern
 
 Vault setup happens once per host from a documented runbook; consumption is the only
-credential pattern PRF emits (SEC-009):
+credential pattern PRF emits (SEC-014):
 
 ```powershell
 Install-Module Microsoft.PowerShell.SecretManagement, Microsoft.PowerShell.SecretStore -Scope CurrentUser
@@ -231,9 +231,9 @@ $cred = Get-Secret -Name 'Contoso/SqlAgent'              # stored as PSCredentia
 Invoke-Command -ComputerName SQL01 -Credential $cred -ScriptBlock { hostname }
 ```
 
-Notes: `-AsPlainText` stays confined to fixtures (SEC-010); locked vaults unlock via
+Notes: `-AsPlainText` stays confined to fixtures (SEC-014); locked vaults unlock via
 `Unlock-SecretVault` interactively, unattended hosts use their documented machine-scoped flow,
-and vault contents remain barred from logs and transcripts (SEC-011).
+and vault contents remain barred from logs and transcripts (SEC-016).
 ## 9. Bulk AD / Azure etiquette
 
 Filter server-side; client-side `Where-Object` drags the whole directory across the wire
@@ -244,8 +244,8 @@ $stale = Get-ADUser -Filter "Department -eq 'Sales'" -Properties LastLogonDate `
            -ResultPageSize 1000 -ResultSetSize 5000       # right: filtered on the DC
 # Wrong: Get-ADUser -Filter * | Where-Object Department -eq 'Sales'
 $stale | Select-Object SamAccountName, Enabled |
-    Export-Csv .\pre-change-inventory.csv -NoTypeInformation   # rollback artifact (SEC-021)
-$stale | Disable-ADAccount -WhatIf                         # prove scope first (IDEM-002)
+    Export-Csv .\pre-change-inventory.csv -NoTypeInformation   # rollback artifact (KS-21)
+$stale | Disable-ADAccount -WhatIf                         # prove scope first (SAFE-013)
 foreach ($u in $stale) {
     Disable-ADAccount -Identity $u -Confirm:$false         # deliberate, approved run
     Start-Sleep -Milliseconds 150                          # stay far below DC throttling
@@ -255,7 +255,7 @@ foreach ($u in $stale) {
 For Graph/Azure workloads: page via the SDK's paging support, honor `Retry-After` on HTTP 429
 with exponential backoff and jitter, and batch writes where supported. Always exclude
 break-glass accounts from bulk disable and stale-cleanup sweeps — they are the recovery path,
-and locking them turns a bad day into an outage (SAFE-005; approvals per SEC-021).
+and locking them turns a bad day into an outage (SAFE-013; approvals per KS-21).
 ## 10. CI hooks preview — the v0.2/v0.3 bridge
 
 Both enforcement tools work today; formalizing them as PRF rule series lands in v0.2 (lint)
@@ -269,7 +269,7 @@ and v0.3 (tests):
 
 Map analyzer severities onto the `SAFE-`/`COMP-` series so lint findings become rule findings,
 and write Pester tests that assert idempotency directly: call twice, assert the second run
-changes nothing observable (`IDEM-004`). Until those series ship, treat this as the manual bar.
+changes nothing observable (every `IDEM-` rule). Until those series ship, treat this as the manual bar.
 
 Cross-references: destructive-operation gating lives in `SEC-*`; failure contracts and record
 enrichment in `ERR-`; execution safety (sessions, waits, break-glass) in `SAFE-`;
