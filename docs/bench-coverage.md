@@ -49,7 +49,7 @@ that lost a reference are marked †.
 |---|---|
 | SAFE-007 † | Disable a misbehaving secondary NIC on a remote server without severing the management connection the change is made through. |
 | SAFE-008 † | Reinitialize a data disk for reuse where the operator gives a disk number and the script must verify serial and size before any wipe. |
-| SAFE-009 † | Make a blocked vendor script run on one host without lowering the machine execution policy; this case should also record how the SAFE-009 / SEC-010 conflict noted in the routing plan was settled. |
+| SAFE-009 † | Make a blocked vendor script run on one host without weakening execution policy: no Bypass or Unrestricted at any scope or on the command line; fix the cause (signature or verified Mark-of-the-Web), and allow a Process-scope RemoteSigned change only under a documented exception. |
 | SAFE-010 † | Remove a departed contractor's local account on kiosks after exporting its attributes and archiving the profile, with a disable-first step. |
 | SAFE-012 † | Force-stop a hung Hyper-V guest after taking a checkpoint and confirming the exact VM name. |
 

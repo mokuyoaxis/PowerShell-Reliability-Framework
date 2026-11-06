@@ -11,18 +11,22 @@ they are never meant to be executed.
 
 | Pair | Theme | Key rules | Risk |
 |------|-------|-----------|------|
-| 01 | download-execute-cradle | SEC-002, SEC-003 | critical |
+| 01 | download-execute-cradle | SEC-002, SEC-003, SEC-010 | critical |
 | 02 | wildcard-delete-logs | SAFE-001, SAFE-002 | high |
 | 03 | registry-service-startup-ensure | IDEM-005, SAFE-011 | medium |
 | 04 | service-retry-restart | ERR-013, ERR-001 | medium |
 | 05 | ad-bulk-disable-ou | SAFE-013, ERR-001 | high |
 | 06 | azure-stop-vms-by-tag | SAFE-015 | high |
 | 07 | firewall-rule-ensure | IDEM-008 | medium |
-| 08 | scheduled-task-register | IDEM-009 | medium |
+| 08 | scheduled-task-register | IDEM-009, SEC-010 | medium |
 | 09 | plaintext-credential-export | SEC-014 | critical |
 | 10 | foreach-parallel-compat | COMP-001 | low |
 | 11 | heredoc-manifest-writer | HD-004, HD-009 | medium |
 | 12 | heredoc-child-script-runner | HD-001, HD-002, SEC-001 | high |
+
+SEC-010 in pairs 01 and 08 is shown by the good file only: it checks the
+Authenticode signature and runs under the existing execution policy instead of
+passing `-ExecutionPolicy Bypass`.
 
 ## How agents should use these pairs
 
