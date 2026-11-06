@@ -162,13 +162,29 @@ The payload in every case was the same four-line JSON here-string.
 
 | Sink | PowerShell 7.6.5 | Windows PowerShell 5.1 |
 |---|---|---|
-| `Set-Content` (no `-Encoding`) | 41 B, no BOM | 41 B, no BOM (ANSI codepage) |
+| `Set-Content` (no `-Encoding`) ¹ | 41 B, no BOM | 41 B, no BOM (ANSI codepage) |
 | `Out-File` (no `-Encoding`) | 41 B, no BOM | **84 B, `FF FE` BOM, 41 NUL bytes (UTF-16LE)** |
 | `Set-Content -Encoding UTF8` | 41 B, no BOM | **44 B, `EF BB BF` BOM** |
 | `Set-Content -Encoding Unicode` | 84 B, UTF-16LE | 84 B, UTF-16LE |
 | `Set-Content -Encoding ASCII` | 41 B, no BOM | 41 B, no BOM |
 | `Set-Content -Encoding OEM` | 41 B, no BOM | 41 B, no BOM |
 | `[IO.File]::WriteAllText` + `UTF8Encoding($false)` | **39 B, no BOM, 0 CR, 3 LF** | **39 B, no BOM, 0 CR, 3 LF** |
+| `Add-Content` (no `-Encoding`) ² | 41 B, no BOM | 41 B, no BOM (ANSI codepage) |
+| `[IO.File]::WriteAllText` + `UTF8Encoding($true)` ² | 42 B, `EF BB BF` BOM | 42 B, `EF BB BF` BOM |
+
+¹ The "ANSI codepage" rows are payload-dependent. The four-line JSON payload is
+pure ASCII, so the byte counts match; non-ASCII content does not survive
+unchanged. Without `-Encoding`, `Set-Content` and `Add-Content` on 5.1 encode
+through the host's ANSI codepage, so the same command writes different bytes on
+hosts with different locales. Measured in issue #2 on a `gb2312` host with the
+payload `caf` + U+00E9: 5.1 wrote 7 B `63 61 66 A8 A6 0D 0A` (`A8 A6` is `é` in
+GBK), 7.6 wrote 7 B `63 61 66 C3 A9 0D 0A`, for both cmdlets. Same length, no
+marker, different bytes — and characters outside the host codepage are lost.
+`Set-Content -Encoding UTF8` on 5.1 wrote 10 B `EF BB BF 63 61 66 C3 A9 0D 0A`
+on the same host: marked, but locale-independent.
+
+² Rows added from the real-Windows run in issue #2 (Windows PowerShell
+5.1.26100.9549, PowerShell 7.6.6); every original row reproduced there unchanged.
 
 COMP-009 is correct that an explicit `-Encoding` is required, and it is correct
 that 5.1's `Out-File` defaults to UTF-16LE. What it cannot say, because it stops
@@ -265,8 +281,13 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 ```
 
 39 bytes, no marker, zero carriage returns, three line feeds — the exact payload,
-on 5.1 and on 7.6. `UTF8Encoding($false)` is the important argument; the default
-constructor emits the marker. Keep the distinction straight: a `.ps1` file that
+on 5.1 and on 7.6. The parameterless constructor (`[System.Text.UTF8Encoding]::new()`
+or `New-Object System.Text.UTF8Encoding`) writes no marker either; the objects
+that do are the static `[System.Text.Encoding]::UTF8` and `UTF8Encoding($true)`,
+both with a three-byte preamble on 5.1 and 7.6 (issue #2). Pass `$false` anyway
+so the intent is explicit, and never "make it explicit" by switching to
+`[System.Text.Encoding]::UTF8` — that is the change that brings the marker back.
+Keep the distinction straight: a `.ps1` file that
 contains non-ASCII must carry a BOM so that Windows PowerShell 5.1 does not decode
 it as the system codepage, but the *payload* written by this call must not get one
 — adding a BOM here is what breaks the byte-identical guarantee.
@@ -295,7 +316,7 @@ Compare-Object (Get-Content C:\temp\probe_a -Raw) (Get-Content C:\temp\probe_b -
 
 # does my heredoc terminator sit at column one?
 Select-String -Path .\script.ps1 -Pattern "^[ \t]+['`"]@"   # HD-001
-Select-String -Path .\script.ps1 -Pattern "@['`"][ \t]*[^\s\r\n]"  # HD-002
+Select-String -Path .\script.ps1 -Pattern "^(?![ \t]*#).*?@['`"][ \t]*[^\s\r\n]"  # HD-002
 Select-String -Path .\script.ps1 -Pattern "<<"               # HD-003
 
 # is anything reaching an interpreter through a shell quoting layer?
@@ -337,7 +358,13 @@ The detection patterns were checked for precision the same way the corpus's own
 self-test checks them: each one must match its own `bad` snippet and must not
 match its own `good` snippet. All nine are precise rather than contextual, which
 is the stronger form and means none of them need the v0.2 AST gate that the
-`IDEM` rules are waiting on.
+`IDEM` rules are waiting on. Issue #2 found the limit of that check: HD-002's
+pattern also fired on a comment line that merely mentions the header
+(`examples/good/12`, line 23), which the comment-free snippets could not show.
+The pattern now skips comment-only lines while still matching a comment after
+the header (`@' # note`), and `tools/rule-selftest.py` carries both cases plus
+the `good/12` file as regression checks. A trailing comment on a code line that
+mentions `@'` can still trip it.
 
 One finding corrected an assumption made while authoring this. The initial draft
 of the delimiter rule was the familiar "`@'` must be the last thing on its

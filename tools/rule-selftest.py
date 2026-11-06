@@ -9,7 +9,10 @@ bad/good snippets:
           guard-rules); real gating requires AST/context analysis (v0.2)
   FAIL    inverted (good-only) or dead (neither)
 
-Also sweeps example pairs and reports detectors that fire nowhere.
+Also sweeps example pairs and reports detectors that fire nowhere, and runs
+fixed regression cases for detectors that once misfired:
+  FAIL    a regression snippet is matched (or missed) against its expectation,
+          or a pattern fires on an example file it must stay silent on
 
 Usage: python3 tools/rule-selftest.py   (exit 0 unless FAIL entries)
 """
@@ -48,6 +51,32 @@ for r in rules:
     else:
         fail.append(f"{rid}: DEAD - fires on neither snippet")
 
+# Regression cases: (rule id, snippet, must match).  Issue #2: HD-002 fired on
+# a comment that merely mentions the header (examples/good/12, line 23).
+REGRESSIONS = [
+    ("HD-002", "# HD-002: nothing but whitespace after @'.\n$s = @'\nbody\n'@\n", False),
+    ("HD-002", "    # indented note about @'.\n", False),
+    ("HD-002", "$s = @' # note\nbody\n'@\n", True),
+    ("HD-002", "@'; $x = 1\n", True),
+]
+# Example files a pattern must not fire on.
+SILENT_ON = {
+    "HD-002": ["examples/good/12-heredoc-child-script-runner.ps1"],
+}
+patterns = {r["id"]: (r.get("detection") or {}).get("pattern") for r in rules}
+texts = dict(example_texts)
+regressions = 0
+for rid, snippet, want in REGRESSIONS:
+    regressions += 1
+    got = bool(re.search(patterns[rid], snippet))
+    if got != want:
+        fail.append(f"{rid}: regression - {'missed' if want else 'matched'} {snippet!r}")
+for rid, paths in SILENT_ON.items():
+    for rel in paths:
+        regressions += 1
+        if re.search(patterns[rid], texts[rel]):
+            fail.append(f"{rid}: regression - fires on {rel}")
+
 cold = []
 for r in rules:
     pat = (r.get("detection") or {}).get("pattern")
@@ -64,6 +93,7 @@ print(f"  precise  (bad only)        : {len(ok)}")
 print(f"  contextual (both sides)    : {len(warn)}")
 print(f"  FAIL                       : {len(fail)}")
 print(f"cold detectors (no corpus/example hit): {len(cold)} {cold}")
+print(f"regression cases             : {regressions}")
 if warn:
     print("\ncontextual detectors (WARN):")
     for w in warn:

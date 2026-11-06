@@ -87,7 +87,8 @@ PowerShell 7 is cross-platform: install pwsh on Linux and PSScriptAnalyzer runs 
 - every `examples/good/*.ps1` must parse cleanly and produce zero Error-severity
   PSScriptAnalyzer diagnostics;
 - `tools/probe-environment.ps1` must parse and its `-AsJson` path must emit valid JSON;
-- CI matrix: `ubuntu-latest` (pwsh 7.x) + `windows-latest` (adds Windows PowerShell 5.1);
+- CI matrix: `macos-latest` (pwsh 7.x) + `windows-latest` (Windows PowerShell 5.1,
+  `shell: powershell`, PSScriptAnalyzer pinned to 1.21.0); `ubuntu-latest` still planned;
 - **hard rule: `bad/*.ps1` are never executed** — text comparison only.
 
 The `heredoc` cases (BENCH-HD-*) split cleanly along the L1/L2 boundary:
@@ -98,6 +99,16 @@ judge and no target machine. The byte-identity cases (HD-004 / HD-009) are the
 exception — proving `Set-Content -Encoding UTF8` writes `EF BB BF` on 5.1 and
 nothing on 7.x requires the `windows-latest` lane, so those two stay in the
 model-judged layer until that lane exists.
+
+Status: the HD-004 / HD-009 byte conclusions have since been reproduced on a real
+Windows host in issue #2 (Windows PowerShell 5.1.26100.9549 and PowerShell 7.6.6,
+ANSI codepage `gb2312`): all 7 rows of the encoding table in
+`knowledge/here-strings-and-heredocs.md` §5.1 matched on both engines, including
+`Set-Content -Encoding UTF8` at 44 B with `EF BB BF` on 5.1 against 41 B on 7.6.
+CI now has the `windows-latest` lane (`gates-windows-ps51`), which runs L0, L1,
+the L3 parse gate and PSScriptAnalyzer under Windows PowerShell 5.1. It does not
+yet run a byte probe, so the two cases stay model-judged in the benchmark until
+one is added to that lane.
 
 ## 4. Rollout order & cost
 
