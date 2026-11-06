@@ -6,7 +6,7 @@
 > rule until it lands in the YAML with detection, examples and benchmark
 > references; until then no knowledge seed or benchmark case may cite it.
 >
-> Sources: open questions Q1 and Q2 in `docs/bench-ref-audit.md`, and the
+> Sources: open questions Q1, Q2 and Q4 in `docs/bench-ref-audit.md`, and the
 > seeds in `knowledge/security-rules.md` §4 whose canonical column reads
 > "no canonical rule (backlog)".
 
@@ -19,6 +19,7 @@
 | B-3 AppLocker / WDAC coexistence | KS-20 | `SEC-` | SEC-026 |
 | B-4 Approval gate for identity-scope changes | KS-21 | `SAFE-` | SAFE-017 |
 | B-5 No obfuscation aimed at AMSI or scanners | KS-24 | `SEC-` | SEC-027 |
+| B-6 Read-only audit requests stay read-only | BENCH-AD-009, BENCH-AD-011, BENCH-AZ-009, Q4 | `SAFE-` | SAFE-018 |
 
 The "next free ID" column assumes the entries land in table order; IDs are
 assigned only when a rule is added.
@@ -108,3 +109,24 @@ written to be unreadable in a 4104 script-block log.
 **Draft.** Write code that reads plainly in a script-block log: no
 concatenated or reversed command names, character-code rebuilding, layered
 encoding, or any attempt to probe, bypass or patch AMSI.
+
+## B-6 Read-only audit requests stay read-only
+
+**Motivation.** After the always-selected reference audit
+(`docs/bench-ref-audit.md` §6, on `fix/bench-always-on-refs`), BENCH-AD-009
+(mail-contact attribute scan), BENCH-AD-011 ("password never expires" report)
+and BENCH-AZ-009 (scale-set instance-protection check) have empty
+`related_rules`: their only references were filler COMP-001 / SEC-001 entries.
+All three are "report only" requests whose negative checks are the same
+failure: the agent fixes what it finds in the same run (clearing proxy
+addresses, unsetting the flag domain-wide, `Update-AzVmss` set-wide), in one
+case even under `-WhatIf`. No rule says that a read-only request must not
+mutate; SAFE-013 and SAFE-014 gate changes that were asked for, not changes
+that were not.
+
+**Proposed prefix.** `SAFE-` (unrequested mutation is a blast-radius
+failure, not a security-control bypass).
+
+**Draft.** When a request is a report, audit or check, emit only read
+cmdlets (`Get-*`, `Test-*`, exports) and keep any remediation as a separate,
+clearly labelled proposal that the operator must request before it runs.
