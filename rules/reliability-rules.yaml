@@ -2086,23 +2086,28 @@ rules:
 - id: SAFE-009
   category: safety
   severity: high
-  title: Never loosen execution policy casually; scope to Process with justification
-  description: Set-ExecutionPolicy Unrestricted or Bypass at LocalMachine scope leaves a persistent security
-    hole just to make one script run. Prefer per-invocation -ExecutionPolicy Bypass on the interpreter
-    command line; when policy truly must change, limit it to Process scope, choose RemoteSigned, and record
-    the ticket and reason beside the change.
+  title: Never loosen execution policy to make a script run; fix the cause instead
+  description: Set-ExecutionPolicy Unrestricted or Bypass at any scope, or -ExecutionPolicy Bypass on the
+    interpreter command line, removes the guardrail just to make one script run (SEC-010). Fix the cause
+    instead - sign the script or clear a verified Mark-of-the-Web - and when a documented platform-owner
+    exception truly requires a change, limit it to Process scope, choose RemoteSigned, and record the ticket
+    and reason beside the change.
   bad: |-
     Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force   # machine-wide hole so one script runs
     Set-ExecutionPolicy Bypass -Force                             # defaults to LocalMachine and persists
+    pwsh -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1    # per-invocation, but still a bypass
   good: |-
-    # Preferred: per-invocation bypass dies with the process, touches nothing persistent
-    pwsh -NoProfile -ExecutionPolicy Bypass -File .\deploy.ps1
+    # Preferred: fix provenance and run under the existing policy
+    $sig = Get-AuthenticodeSignature -FilePath .\deploy.ps1
+    if ($sig.Status -ne 'Valid') { throw "deploy.ps1 is not validly signed ($($sig.Status)); sign it instead of bypassing policy." }
+    pwsh -NoProfile -File .\deploy.ps1
 
-    # If policy genuinely must change: Process scope only, least-permissive setting, justified
+    # Documented exception only: Process scope, least-permissive setting, justified
     Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned -Force
     Add-Content -LiteralPath .\OPS-LOG.md -Value "$(Get-Date -Format s) Process-scope RemoteSigned for deploy.ps1 (ticket OPS-142)"
   rationale: Machine-wide policy loosening outlives the incident that motivated it and silently widens
-    attack surface; process-scoped changes expire with the session.
+    attack surface; a per-invocation Bypass leaves nothing persistent but normalizes stepping around the
+    gate, so only a justified, process-scoped RemoteSigned change is acceptable.
   applies_to:
   - powershell-5.1
   - powershell-7

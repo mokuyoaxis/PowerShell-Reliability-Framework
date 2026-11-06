@@ -1,5 +1,5 @@
 # PRF Example 01 — download-execute-cradle
-# Rules demonstrated: SEC-002, SEC-003
+# Rules demonstrated: SEC-002, SEC-003, SEC-010
 # Risk class: critical
 # NOTE: bad/*.ps1 are NEGATIVE training examples. Never execute them.
 
@@ -26,8 +26,15 @@ if ($ExpectedSha256 -and $actualHash -ne $ExpectedSha256) {
 # Inspection gate: surface what would actually run before running it.
 Get-Content -LiteralPath $installer -TotalCount 40 | Write-Host
 
+# SEC-010: run under the existing execution policy, never -ExecutionPolicy
+# Bypass. The installer must carry a valid Authenticode signature.
+$signature = Get-AuthenticodeSignature -FilePath $installer
+if ($signature.Status -ne 'Valid') {
+    throw "Installer signature is not valid: $($signature.Status)"
+}
+
 if ($PSCmdlet.ShouldProcess($installer, 'Execute hash-verified installer')) {
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $installer
+    & powershell.exe -NoProfile -File $installer
     if ($LASTEXITCODE -ne 0) { throw "Installer exited with code $LASTEXITCODE" }
 }
 Remove-Item -LiteralPath $installer -Force -ErrorAction SilentlyContinue

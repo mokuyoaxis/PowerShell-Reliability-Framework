@@ -134,7 +134,7 @@ net.exe use \\file01\backup /user:CORP\svc_backup 'Summer2024!'
 **Risk**: critical — **Related**: SEC-, SAFE-
 **Repair**:
 ```powershell
-$cred = Get-Secret 'CORP/svc_backup'; net.exe use \\file01\backup /user:CORP\svc_backup $cred.GetNetworkCredential().Password
+$cred = Get-Secret 'CORP/svc_backup'; New-PSDrive -Name Backup -PSProvider FileSystem -Root \\file01\backup -Credential $cred | Out-Null   # credential object, never argv
 ```
 ### AP-12 — ConvertTo-SecureString -AsPlainText -Force
 **Symptom**: SecureStrings fabricated from plaintext literals to satisfy credential parameters.
@@ -269,7 +269,7 @@ Set-ExecutionPolicy Unrestricted -Scope LocalMachine -Force; .\setup.ps1
 **Risk**: high | **Related**: SEC-, SAFE-
 **Repair**:
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1; Unblock-File .\setup.ps1   # scope to the invocation, not the machine
+if ((Get-AuthenticodeSignature .\setup.ps1).Status -ne 'Valid') { throw 'setup.ps1 is unsigned or altered: sign it, do not bypass policy' }; .\setup.ps1
 ```
 ## AP-23 — `DownloadString` cradles
 **Symptom**: Bootstrap one-liners fetch a script straight into memory and execute it; afterward nobody can say what code ran, whence it came, or whether it changed since yesterday.
