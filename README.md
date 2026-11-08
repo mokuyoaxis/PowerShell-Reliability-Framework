@@ -101,8 +101,11 @@ established; none are claimed until the first double-blind benchmark run complet
 
 `examples/bad/` and security-rule snippets show *attack-shaped* PowerShell
 (download-and-execute cradles, persistence patterns) **as negative training
-examples only**. They are intentionally non-operational illustrations. Never
-execute `examples/bad/*.ps1`. PRF is intended exclusively for defensive and
+examples only**. Snippets that would switch off a security control (Defender
+preferences, audit logging, inline native code, script-URL loaders) are written
+as descriptions rather than runnable lines; the rest is real PowerShell, with
+example hosts where a URL is needed. Never execute `examples/bad/*.ps1` or a
+rule's `bad` snippet. PRF is intended exclusively for defensive and
 reliability-engineering purposes.
 
 ## License
