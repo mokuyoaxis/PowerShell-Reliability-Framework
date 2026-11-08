@@ -10,7 +10,7 @@
 # reviewed against; tools/validate.py fails when the corpus changes underneath.
 schema_version: 0.1.0
 name: prf-routing-labels
-rules_blob: 8aa574e2a97665d939e28f6f692b2b1765f81a35
+rules_blob: 9a78865ee0dd56aa5fbd120d76c3c582e2a74d72
 review_status: candidate
 risk_vocabulary: [R, W, D, N, C]
 topic_vocabulary: [language, errors, filesystem, registry, identity, cloud, network, service, automation, security, transport]
